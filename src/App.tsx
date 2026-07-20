@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import { apiGet, apiPost, apiPut, apiDelete } from "./lib/api";
+import { EventData, SeatingData } from "./lib/types";
 import { Seat } from '@/components/Seat.tsx';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.tsx';
 import { Button } from '@/components/ui/button.tsx';
@@ -13,6 +16,55 @@ import {
 import './App.css';
 
 function App() {
+
+	const [eventData, setEventData] = useState<EventData | null>(null);
+	const [seatingData, setSeatingData] = useState<SeatingData | null>(null);
+
+	const eventId = eventData?.eventId;
+
+	useEffect(() => {
+		const fetchEventData = async (): Promise<void> => {
+			try {
+				const response = await apiGet<EventData>("/event/");
+
+				if (response) {
+					setEventData(response);
+				}
+			} catch (error: unknown) {
+				if (error instanceof Error) {
+					console.error(error.message);
+				}
+			}
+		};
+
+		void fetchEventData();
+	}, []);
+
+	useEffect(() => {
+		if (!eventId) {
+			return;
+		}
+
+		const fetchSeatingData = async (): Promise<void> => {
+			try {
+				const response = await apiGet<SeatingData>(`/event-tickets?eventId=${encodeURIComponent(eventId)}`);
+
+				if (response) {
+					setSeatingData(response);
+				}
+			} catch (error: unknown) {
+				if (error instanceof Error) {
+					console.error(error.message);
+				}
+			}
+		};
+
+		void fetchSeatingData();
+	}, [eventId]);
+
+	console.log(eventData);
+	console.log(seatingData);
+
 	const isLoggedIn = false;
 	
 	return (
@@ -86,14 +138,32 @@ function App() {
 					
 					{/* event info */}
 					<aside className="w-full max-w-sm bg-white rounded-md shadow-sm p-3 flex flex-col gap-2">
-						{/* event header image placeholder */}
-						<div className="bg-zinc-100 rounded-md h-32" />
-						{/* event name */}
-						<h1 className="text-xl text-zinc-900 font-semibold">[event-name]</h1>
-						{/* event description */}
-						<p className="text-sm text-zinc-500">[event-description]: Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam aliquid asperiores beatae deserunt dicta dolorem eius eos fuga laborum nisi officia pariatur quidem repellendus, reprehenderit sapiente, sed tenetur vel voluptatibus?</p>
+						{eventData ? (
+							<>
+								{/* event header image placeholder */}
+								<div className="bg-zinc-100 rounded-md h-32" style={{ backgroundImage: `url(${eventData?.headerImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+								{/* event name */}
+								<h1 className="text-xl text-zinc-900 font-semibold">{eventData?.namePub}</h1>
+								{/* event description */}
+								<p className="text-sm text-zinc-500">{eventData?.description}</p>
+								{/* event date, time and place */}
+								<small className="text-xs text-zinc-900"><em>Datum zahájení: {eventData?.dateFrom?.slice(0, 10)} v {eventData?.dateFrom?.slice(11, 16)}</em></small>
+								<small className="text-xs text-zinc-900"><em>Datum ukončení: {eventData?.dateTo?.slice(0, 10)} v {eventData?.dateTo?.slice(11, 16)}</em></small>
+								<small className="text-xs text-zinc-900"><em>Místo konání: {eventData?.place.slice(12, )}</em></small>
+							</>
+						) : 
+							(
+								<>
+									{/* event loading state (spiner) */}
+									<div className="flex min-h-48 items-center justify-center" role="status" aria-label="Loading event">
+        							<div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-800" />
+        								<span className="sr-only">Loading event...</span>
+    								</div>
+								</>
+							) }
+
 						{/* add to calendar button */}
-						<Button variant="secondary" disabled>
+						<Button variant="secondary">
 							Add to calendar
 						</Button>
 					</aside>
