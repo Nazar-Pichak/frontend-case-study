@@ -1,10 +1,9 @@
 // This file contains utility functions for making API requests to the backend server.
 // It provides functions for GET, POST, PUT, and DELETE requests, handling JSON data and error responses appropriately.
 
+import type { FetchData, ApiGet, ApiPost, ApiPut, ApiDelete } from './types.ts';
 
 const API_BASE_URL = "https://nfctron-frontend-seating-case-study-2024.vercel.app";
-
-import type { FetchData, ApiGet, ApiPost, ApiPut, ApiDelete } from './types.ts';
 
 const fetchData : FetchData = (url, requestOptions) => {
     const apiUrl = `${API_BASE_URL}${url}`;
@@ -25,17 +24,21 @@ const fetchData : FetchData = (url, requestOptions) => {
         });
 };
 
-export const apiGet : ApiGet = (url, params) => {
-    const filteredParams = Object.fromEntries(
-        Object.entries(params || {}).filter(([_, value]) => value != null)
-    );
+export const apiGet: ApiGet = (url, params) => {
+    const searchParams = new URLSearchParams();
 
-    const apiUrl = `${url}?${new URLSearchParams(filteredParams)}`;
-    const requestOptions = {
+    Object.entries(params ?? {}).forEach(([key, value]) => {
+        if (value != null) {
+            searchParams.set(key, String(value));
+        }
+    });
+
+    const queryString = searchParams.toString();
+    const apiUrl = queryString ? `${url}?${queryString}` : url;
+
+    return fetchData(apiUrl, {
         method: "GET",
-    };
-
-    return fetchData(apiUrl, requestOptions);
+    });
 };
 
 export const apiPost : ApiPost = (url, data) => {

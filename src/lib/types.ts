@@ -1,8 +1,12 @@
 // Type definitions for API functions
+type QueryValue = string | number | boolean | null | undefined;
+type QueryParams = Record<string, QueryValue>;
+type RequestBody = Record<string, unknown>;
+
 type FetchData = <T>(url: string, requestOptions: RequestInit) => Promise<T | undefined>;
-type ApiGet = <T>(url: string, params?: Record<string, any>) => Promise<T | undefined>;
-type ApiPost = <T>(url: string, data: Record<string, any>) => Promise<T | undefined>;
-type ApiPut = <T>(url: string, data: Record<string, any>) => Promise<T | undefined>;
+type ApiGet = <T>(url: string, params?: QueryParams) => Promise<T | undefined>;
+type ApiPost = <T>(url: string, data: RequestBody) => Promise<T | undefined>;
+type ApiPut = <T>(url: string, data: RequestBody) => Promise<T | undefined>;
 type ApiDelete = <T>(url: string) => Promise<T | undefined>;
 
 export type { FetchData, ApiGet, ApiPost, ApiPut, ApiDelete };
@@ -26,19 +30,19 @@ export interface TicketType {
     price: number;
 }
 
-export interface Seat {
+export interface Seats {
     seatId: string;
     place: number;
     ticketTypeId: string;
 }
 
-export interface SeatRow {
+export interface SeatRows {
     seatRow: number;
-    seats: Seat[];
+    seats: Seats[];
 }
 
 export interface SeatingData {
     ticketTypes: TicketType[];
-    seatRows: SeatRow[];
+    seatRows: SeatRows[];
 }
 

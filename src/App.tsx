@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiGet, apiPost, apiPut, apiDelete } from "./lib/api";
+import { apiGet } from "./lib/api";
 import { EventData, SeatingData } from "./lib/types";
 import { Seat } from '@/components/Seat.tsx';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.tsx';
@@ -14,6 +14,7 @@ import {
 	DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu.tsx';
 import './App.css';
+import React from 'react';
 
 function App() {
 
@@ -47,7 +48,7 @@ function App() {
 
 		const fetchSeatingData = async (): Promise<void> => {
 			try {
-				const response = await apiGet<SeatingData>(`/event-tickets?eventId=${encodeURIComponent(eventId)}`);
+				const response = await apiGet<SeatingData>(`/event-tickets?eventId=${eventId}`);
 
 				if (response) {
 					setSeatingData(response);
@@ -124,16 +125,21 @@ function App() {
 				{/* inner content */}
 				<div className="max-w-screen-lg m-auto p-4 flex items-start grow gap-3 w-full">
 					{/* seating card */}
-					<div className="bg-white rounded-md grow grid p-3 self-stretch shadow-sm" style={{
-						gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))',
-						gridAutoRows: '40px'
-					}}>
-						{/*	seating map */}
-						{
-							Array.from({ length: 100 }, (_, i) => (
-								<Seat key={i} />
-							))
-						}
+					<div className="bg-white rounded-md grow p-3 self-stretch shadow-sm" style={{gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))',gridAutoRows: '40px'}}>
+
+						{seatingData?.seatRows.map((seatRow, rowIndex) => (
+							<React.Fragment key={rowIndex}>
+								<div className="flex justify-start items-center gap-1 my-1">
+									<p className="text-zinc-400 font-medium">{seatRow.seatRow}</p>
+									{
+										seatRow.seats.map((seat) => (
+											<Seat key={seat.place} seatData={seat}/>
+										))
+									}
+								</div>
+							</React.Fragment>
+						))}
+
 					</div>
 					
 					{/* event info */}
@@ -156,9 +162,9 @@ function App() {
 								<>
 									{/* event loading state (spiner) */}
 									<div className="flex min-h-48 items-center justify-center" role="status" aria-label="Loading event">
-        							<div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-800" />
-        								<span className="sr-only">Loading event...</span>
-    								</div>
+										<div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-800" />
+										<span className="sr-only">Loading event...</span>
+									</div>
 								</>
 							) }
 

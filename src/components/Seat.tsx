@@ -2,8 +2,10 @@ import { Button } from '@/components/ui/button.tsx';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover.tsx';
 import { cn } from '@/lib/utils.ts';
 import React from 'react';
+import type { Seats } from '@/lib/types.ts';
 
 interface SeatProps extends React.HTMLAttributes<HTMLElement> {
+	seatData: Seats;
 }
 
 export const Seat = React.forwardRef<HTMLDivElement, SeatProps>((props, ref) => {
@@ -11,13 +13,12 @@ export const Seat = React.forwardRef<HTMLDivElement, SeatProps>((props, ref) => 
 	return (
 		<Popover>
 			<PopoverTrigger>
-				<div className={cn('size-8 rounded-full bg-zinc-100 hover:bg-zinc-200 transition-color', props.className)}
-				     ref={ref}>
-					<span className="text-xs text-zinc-400 font-medium">[n]</span>
+				<div className={cn('size-8 rounded-full bg-zinc-100 hover:bg-zinc-200 transition-color', props.className)} ref={ref}>
+					<span className="text-xs text-zinc-400 font-medium">{props.seatData.place}</span>
 				</div>
 			</PopoverTrigger>
 			<PopoverContent>
-				<pre>{JSON.stringify({ seatData: null }, null, 2)}</pre>
+				<pre>{JSON.stringify({ seatData: props.seatData }, null, 2)}</pre>
 				
 				<footer className="flex flex-col">{
 					isInCart ? (
