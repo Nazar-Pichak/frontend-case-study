@@ -13,8 +13,8 @@ export const Seat = React.forwardRef<HTMLDivElement, SeatProps>((props, ref) => 
 	return (
 		<Popover>
 			<PopoverTrigger>
-				<div className={cn('size-8 rounded-full bg-zinc-100 hover:bg-zinc-200 transition-color', props.className)} ref={ref}>
-					<span className="text-xs text-zinc-400 font-medium">{props.seatData.place}</span>
+				<div className={cn('flex size-8 items-center justify-center rounded-full border border-violet-200 bg-violet-50 text-violet-700 transition-colors hover:border-violet-600 hover:bg-violet-600 hover:text-white', props.className)} ref={ref}>
+					<span className="text-xs font-medium">{props.seatData.place}</span>
 				</div>
 			</PopoverTrigger>
 			<PopoverContent>

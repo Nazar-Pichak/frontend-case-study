@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { apiGet } from "./lib/api";
-import { EventData, SeatingData } from "./lib/types";
-import { Seat } from '@/components/Seat.tsx';
+import { apiGet } from "@/lib/api";
+import { EventData, SeatingData } from "@/lib/types";
+import { SeatingMap } from '@/components/SeatingMap.tsx';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.tsx';
 import { Button } from '@/components/ui/button.tsx';
+import { Spinner } from '@/components/ui/spinner.tsx';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -14,7 +15,7 @@ import {
 	DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu.tsx';
 import './App.css';
-import React from 'react';
+
 
 function App() {
 
@@ -67,7 +68,7 @@ function App() {
 	console.log(seatingData);
 
 	const isLoggedIn = false;
-	
+
 	return (
 		<div className="flex flex-col grow">
 			{/* header (wrapper) */}
@@ -92,7 +93,7 @@ function App() {
 													<AvatarImage src={`https://source.boringavatars.com/marble/120/<user-email>?colors=25106C,7F46DB`} />
 													<AvatarFallback>CN</AvatarFallback>
 												</Avatar>
-												
+
 												<div className="flex flex-col text-left">
 													<span className="text-sm font-medium">John Doe</span>
 													<span className="text-xs text-zinc-500">john.doe@nfctron.com</span>
@@ -119,29 +120,25 @@ function App() {
 					</div>
 				</div>
 			</nav>
-			
+
 			{/* main body (wrapper) */}
 			<main className="grow flex flex-col justify-center">
 				{/* inner content */}
 				<div className="max-w-screen-lg m-auto p-4 flex items-start grow gap-3 w-full">
 					{/* seating card */}
-					<div className="bg-white rounded-md grow p-3 self-stretch shadow-sm" style={{gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))',gridAutoRows: '40px'}}>
+					<div className="bg-white rounded-md grow overflow-x-auto p-3 self-stretch shadow-sm" style={{gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))',gridAutoRows: '40px'}}>
 
-						{seatingData?.seatRows.map((seatRow, rowIndex) => (
-							<React.Fragment key={rowIndex}>
-								<div className="flex justify-start items-center gap-1 my-1">
-									<p className="text-zinc-400 font-medium">{seatRow.seatRow}</p>
-									{
-										seatRow.seats.map((seat) => (
-											<Seat key={seat.place} seatData={seat}/>
-										))
-									}
-								</div>
-							</React.Fragment>
-						))}
+						{seatingData ? (
+							<SeatingMap seatRows={seatingData.seatRows} />
+						) : (
+							<>
+								{/* seating loading state (spiner) */}
+								<Spinner label="Loading seating data" />
+							</>
+						)}
 
 					</div>
-					
+
 					{/* event info */}
 					<aside className="w-full max-w-sm bg-white rounded-md shadow-sm p-3 flex flex-col gap-2">
 						{eventData ? (
@@ -157,16 +154,12 @@ function App() {
 								<small className="text-xs text-zinc-900"><em>Datum ukončení: {eventData?.dateTo?.slice(0, 10)} v {eventData?.dateTo?.slice(11, 16)}</em></small>
 								<small className="text-xs text-zinc-900"><em>Místo konání: {eventData?.place.slice(12, )}</em></small>
 							</>
-						) : 
-							(
-								<>
-									{/* event loading state (spiner) */}
-									<div className="flex min-h-48 items-center justify-center" role="status" aria-label="Loading event">
-										<div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-800" />
-										<span className="sr-only">Loading event...</span>
-									</div>
-								</>
-							) }
+						) : (
+							<>
+								{/* event loading state (spiner) */}
+								<Spinner label="Loading event data" />
+							</>
+						)}
 
 						{/* add to calendar button */}
 						<Button variant="secondary">
@@ -175,7 +168,7 @@ function App() {
 					</aside>
 				</div>
 			</main>
-			
+
 			{/* bottom cart affix (wrapper) */}
 			<nav className="sticky bottom-0 left-0 right-0 bg-white border-t border-zinc-200 flex justify-center">
 				{/* inner content */}
@@ -185,7 +178,7 @@ function App() {
 						<span>Total for [?] tickets</span>
 						<span className="text-2xl font-semibold">[?] CZK</span>
 					</div>
-					
+
 					{/* checkout button */}
 					<Button disabled variant="default">
 						Checkout now
