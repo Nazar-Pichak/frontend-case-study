@@ -5,10 +5,11 @@ interface SeatingMapProps {
     seatRows: SeatRows[];
     selectedSeats: Seats[];
     ticketTypes: TicketTypes[];
+    currencyIso: string;
     onToggleSeat: (seat: Seats) => void;
 }
 
-export function SeatingMap({ seatRows, selectedSeats, ticketTypes, onToggleSeat }: SeatingMapProps) {
+export function SeatingMap({ seatRows, selectedSeats, ticketTypes, currencyIso, onToggleSeat }: SeatingMapProps) {
     const maxSeatPlace = seatRows.reduce(
         (currentMaximum, row) =>
             row.seats.reduce(
@@ -59,8 +60,16 @@ export function SeatingMap({ seatRows, selectedSeats, ticketTypes, onToggleSeat 
 
                                 if (seat) {
                                     const ticketType = ticketTypes.find((t) => t.id === seat.ticketTypeId);
-                                    return (<Seat key={seat.seatId} seatData={seat} ticketType={ticketType} isSelected={selectedSeatIds.has(seat.seatId)} onToggle={onToggleSeat} />);
-                                }
+                                    return (
+                                        <Seat
+                                            key={seat.seatId}
+                                            seatData={seat}
+                                            ticketType={ticketType}
+                                            currencyIso={currencyIso}
+                                            isSelected={selectedSeatIds.has(seat.seatId)}
+                                            onToggle={onToggleSeat} />
+                                        );
+                                    }
 
                                 return (
                                     <div key={`unavailable-${row.seatRow}-${place}`}
@@ -80,7 +89,7 @@ export function SeatingMap({ seatRows, selectedSeats, ticketTypes, onToggleSeat 
             </div>
 
             {/* Legend */}
-            <div className="w-full mt-auto flex items-center justify-center gap-6 border-t border-zinc-200 pt-4" aria-label="Seat availability legend">
+            <div className="w-full mt-6 lg:mt-auto flex items-center justify-center gap-6 border-t border-zinc-200 pt-4" aria-label="Seat availability legend">
                 <div className="flex items-center gap-2">
                     <span className="size-4 rounded-full border border-violet-200 bg-violet-50" aria-hidden="true" />
                     <span className="text-sm text-zinc-600">Available</span>

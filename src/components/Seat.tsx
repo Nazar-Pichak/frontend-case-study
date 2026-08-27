@@ -5,13 +5,14 @@ import {
 	PopoverTrigger,
 } from '@/components/ui/popover.tsx';
 import type { Seats, TicketTypes } from '@/lib/types.ts';
-import { cn } from '@/lib/utils.ts';
+import { cn, formatCurrency } from '@/lib/utils.ts';
 import React from 'react';
 
 interface SeatProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 	seatData: Seats;
 	ticketType: TicketTypes | undefined;
 	isSelected: boolean;
+	currencyIso: string;
 	onToggle: (seat: Seats) => void;
 }
 
@@ -21,6 +22,7 @@ export const Seat = React.forwardRef<HTMLButtonElement, SeatProps>(
 			seatData,
 			ticketType,
 			isSelected,
+			currencyIso,
 			onToggle,
 			className,
 			...buttonProps
@@ -55,7 +57,7 @@ export const Seat = React.forwardRef<HTMLButtonElement, SeatProps>(
 						<div className="mt-2 flex items-center justify-between gap-4">
 							<span className="text-sm text-zinc-500">Price</span>
 							<span className="font-semibold">
-								{ticketType ? `${ticketType.price.toLocaleString('cs-CZ')} Kč` : 'Unavailable'}
+								{ticketType ? formatCurrency(ticketType.price, currencyIso) : 'Unavailable'}
 							</span>
 						</div>
 					</div>

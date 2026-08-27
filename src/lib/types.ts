@@ -46,3 +46,38 @@ export interface SeatingData {
     seatRows: SeatRows[];
 }
 
+// User datails, login, order interfaces
+export interface UserDetails {
+    email: string;
+    firstName: string;
+    lastName: string;
+}
+
+export interface LoginRequest {
+    email: string;
+    password: string;
+}
+
+export interface LoginResponse {
+    message: string;
+    user: UserDetails;
+}
+
+export interface OrderTicket {
+    ticketTypeId: string;
+    seatId: string;
+}
+
+export interface CreateOrderRequest {
+    eventId: string;
+    tickets: OrderTicket[];
+    user: UserDetails;
+}
+
+export interface CreateOrderResponse {
+    message: string;
+    orderId: string;
+    tickets: unknown[];
+    user: UserDetails;
+    totalAmount: number;
+}
