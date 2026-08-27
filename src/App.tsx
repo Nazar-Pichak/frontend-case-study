@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiGet } from "@/lib/api";
-import { EventData, SeatingData } from "@/lib/types";
+import { EventData, SeatingData, Seats } from "@/lib/types";
 import { SeatingMap } from '@/components/SeatingMap.tsx';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.tsx';
 import { Button } from '@/components/ui/button.tsx';
@@ -21,7 +21,10 @@ function App() {
 
 	const [eventData, setEventData] = useState<EventData | null>(null);
 	const [seatingData, setSeatingData] = useState<SeatingData | null>(null);
+	const [selectedSeats, setSelectedSeats] = useState<Seats[]>([]);
 
+	// Fetch data based on eventId in case of multiple events,
+	// for now we will use the first eventId from the eventData
 	const eventId = eventData?.eventId;
 
 	useEffect(() => {
@@ -64,8 +67,26 @@ function App() {
 		void fetchSeatingData();
 	}, [eventId]);
 
-	console.log(eventData);
-	console.log(seatingData);
+	// Handle seat selection and deselection
+	const handleToggleSeat = (seat: Seats) => {
+		setSelectedSeats((currentSeats) => {
+			const isSelected = currentSeats.some((currentSeat) => currentSeat.seatId === seat.seatId);
+
+			if (isSelected) {
+				return currentSeats.filter((currentSeat) => currentSeat.seatId !== seat.seatId);
+			}
+
+			return [...currentSeats, seat];
+		});
+	};
+
+	const totalPrice = selectedSeats.reduce((total, seat) => {
+		const ticketType = seatingData?.ticketTypes.find(
+			(type) => type.id === seat.ticketTypeId
+		);
+
+		return total + (ticketType?.price ?? 0);
+	}, 0);
 
 	const isLoggedIn = false;
 
@@ -126,10 +147,10 @@ function App() {
 				{/* inner content */}
 				<div className="max-w-screen-lg m-auto p-4 flex items-start grow gap-3 w-full">
 					{/* seating card */}
-					<div className="bg-white rounded-md grow overflow-x-auto p-3 self-stretch shadow-sm" style={{gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))',gridAutoRows: '40px'}}>
+					<div className="bg-white rounded-md grow overflow-x-auto p-3 self-stretch shadow-sm" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))', gridAutoRows: '40px' }}>
 
 						{seatingData ? (
-							<SeatingMap seatRows={seatingData.seatRows} />
+							<SeatingMap seatRows={seatingData.seatRows} ticketTypes={seatingData.ticketTypes} selectedSeats={selectedSeats} onToggleSeat={handleToggleSeat} />
 						) : (
 							<>
 								{/* seating loading state (spiner) */}
@@ -152,7 +173,7 @@ function App() {
 								{/* event date, time and place */}
 								<small className="text-xs text-zinc-900"><em>Datum zahájení: {eventData?.dateFrom?.slice(0, 10)} v {eventData?.dateFrom?.slice(11, 16)}</em></small>
 								<small className="text-xs text-zinc-900"><em>Datum ukončení: {eventData?.dateTo?.slice(0, 10)} v {eventData?.dateTo?.slice(11, 16)}</em></small>
-								<small className="text-xs text-zinc-900"><em>Místo konání: {eventData?.place.slice(12, )}</em></small>
+								<small className="text-xs text-zinc-900"><em>Místo konání: {eventData?.place.slice(12,)}</em></small>
 							</>
 						) : (
 							<>
@@ -162,7 +183,7 @@ function App() {
 						)}
 
 						{/* add to calendar button */}
-						<Button variant="secondary">
+						<Button variant="default">
 							Add to calendar
 						</Button>
 					</aside>
@@ -175,12 +196,12 @@ function App() {
 				<div className="max-w-screen-lg p-6 flex justify-between items-center gap-4 grow">
 					{/* total in cart state */}
 					<div className="flex flex-col">
-						<span>Total for [?] tickets</span>
-						<span className="text-2xl font-semibold">[?] CZK</span>
+						<span>Total for {selectedSeats.length}{' '}{selectedSeats.length === 1 ? 'ticket' : 'tickets'}</span>
+						<span className="text-2xl font-semibold">{totalPrice.toLocaleString("cs-CZ")} CZK</span>
 					</div>
 
 					{/* checkout button */}
-					<Button disabled variant="default">
+					<Button variant="default">
 						Checkout now
 					</Button>
 				</div>

@@ -24,7 +24,7 @@ export interface EventData {
 }
 
 // Seating data interfaces
-export interface TicketType {
+export interface TicketTypes {
     id: string;
     name: string;
     price: number;
@@ -42,7 +42,7 @@ export interface SeatRows {
 }
 
 export interface SeatingData {
-    ticketTypes: TicketType[];
+    ticketTypes: TicketTypes[];
     seatRows: SeatRows[];
 }
 

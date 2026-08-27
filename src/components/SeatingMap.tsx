@@ -1,11 +1,14 @@
 import { Seat } from '@/components/Seat.tsx';
-import type { SeatRows } from '@/lib/types.ts';
+import type { SeatRows, Seats, TicketTypes } from '@/lib/types.ts';
 
 interface SeatingMapProps {
     seatRows: SeatRows[];
+    selectedSeats: Seats[];
+    ticketTypes: TicketTypes[];
+    onToggleSeat: (seat: Seats) => void;
 }
 
-export function SeatingMap({ seatRows }: SeatingMapProps) {
+export function SeatingMap({ seatRows, selectedSeats, ticketTypes, onToggleSeat }: SeatingMapProps) {
     const maxSeatPlace = seatRows.reduce(
         (currentMaximum, row) =>
             row.seats.reduce(
@@ -14,6 +17,10 @@ export function SeatingMap({ seatRows }: SeatingMapProps) {
                 currentMaximum
             ),
         0
+    );
+
+    const selectedSeatIds = new Set(
+        selectedSeats.map((seat) => seat.seatId)
     );
 
     if (seatRows.length === 0) {
@@ -29,7 +36,7 @@ export function SeatingMap({ seatRows }: SeatingMapProps) {
             {/* Stage */}
             <div className="w-full mb-8 flex justify-center">
                 <div className="w-2/3 max-w-xl">
-                    <div className="h-3 rounded-t-md bg-gradient-to-r from-violet-500 via-violet-700 to-violet-500 shadow-md" />
+                    <div className="h-3 rounded-t-md bg-violet-50 shadow-lg " />
 
                     <p className="mt-2 text-center text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
                         Stage
@@ -51,7 +58,8 @@ export function SeatingMap({ seatRows }: SeatingMapProps) {
                                 const seat = seatsByPlace.get(place);
 
                                 if (seat) {
-                                    return (<Seat key={seat.seatId} seatData={seat} />);
+                                    const ticketType = ticketTypes.find((t) => t.id === seat.ticketTypeId);
+                                    return (<Seat key={seat.seatId} seatData={seat} ticketType={ticketType} isSelected={selectedSeatIds.has(seat.seatId)} onToggle={onToggleSeat} />);
                                 }
 
                                 return (
