@@ -37,7 +37,7 @@ export function SeatingMap({ seatRows }: SeatingMapProps) {
                 </div>
             </div>
             {/* Seat Rows */}
-            <div className="space-y-2">
+            <div className="space-y-2 border-l border-t border-zinc-200 p-4">
                 {seatRows.map((row) => {
                     const seatsByPlace = new Map(row.seats.map((seat) => [seat.place, seat]));
 
