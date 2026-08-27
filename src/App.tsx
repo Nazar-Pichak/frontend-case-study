@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react";
-import { formatCurrency } from '@/lib/utils.ts';
+
 import { apiGet, apiPost } from "@/lib/api.ts";
-import { SeatingMap } from '@/components/SeatingMap.tsx';
-import { CartSummary } from "@/components/CartSummary.tsx";
-import { LoginDialog } from '@/components/LoginDialog.tsx';
-import { CheckoutDialog } from "@/components/ChekoutDialog.tsx";
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.tsx';
-import { Button } from '@/components/ui/button.tsx';
-import { Spinner } from '@/components/ui/spinner.tsx';
+import { formatCurrency } from '@/lib/utils.ts';
 import {
 	EventData,
 	SeatingData,
@@ -17,6 +11,16 @@ import {
 	LoginResponse,
 	CreateOrderResponse
 } from "@/lib/types.ts";
+
+import { SeatingMap } from '@/components/SeatingMap.tsx';
+import { CartSummary } from "@/components/CartSummary.tsx";
+import { LoginDialog } from '@/components/LoginDialog.tsx';
+import { CheckoutDialog } from "@/components/ChekoutDialog.tsx";
+import { AddToCalendar } from '@/components/AddToCalendar.tsx';
+
+import { Button } from '@/components/ui/button.tsx';
+import { Spinner } from '@/components/ui/spinner.tsx';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.tsx';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -332,6 +336,8 @@ function App() {
 								<small className="text-xs text-zinc-900"><em>Datum zahájení: {eventData?.dateFrom?.slice(0, 10)} v {eventData?.dateFrom?.slice(11, 16)}</em></small>
 								<small className="text-xs text-zinc-900"><em>Datum ukončení: {eventData?.dateTo?.slice(0, 10)} v {eventData?.dateTo?.slice(11, 16)}</em></small>
 								<small className="text-xs text-zinc-900"><em>Místo konání: {eventData?.place.slice(12,)}</em></small>
+								{/* add to calendar button */}
+								<AddToCalendar event={eventData} />
 							</>
 						) : (
 							<>
@@ -340,10 +346,6 @@ function App() {
 							</>
 						)}
 
-						{/* add to calendar button */}
-						<Button variant="default">
-							Add to calendar
-						</Button>
 					</aside>
 				</div>
 			</main>
