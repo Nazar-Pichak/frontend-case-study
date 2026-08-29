@@ -67,7 +67,7 @@ function App() {
 	useEffect(() => {
 		const fetchEventData = async (): Promise<void> => {
 			try {
-				const response = await apiGet<EventData>('/event/');
+				const response = await apiGet<EventData>('/event');
 
 				if (response) {
 					setEventData(response);
