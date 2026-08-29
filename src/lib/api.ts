@@ -3,7 +3,7 @@
 
 import type { FetchData, ApiGet, ApiPost, ApiPut, ApiDelete } from './types.ts';
 
-const API_BASE_URL = "https://nfctron-frontend-seating-case-study-2024.vercel.app";
+const API_BASE_URL = "/api";
 
 const fetchData : FetchData = (url, requestOptions) => {
     const apiUrl = `${API_BASE_URL}${url}`;
