@@ -1,5 +1,6 @@
 import { Seat } from '@/components/Seat.tsx';
 import type { SeatRows, Seats, TicketTypes } from '@/lib/types.ts';
+import { useTranslation } from '@/hooks/useTranslation.ts';
 
 interface SeatingMapProps {
     seatRows: SeatRows[];
@@ -10,6 +11,9 @@ interface SeatingMapProps {
 }
 
 export function SeatingMap({ seatRows, selectedSeats, ticketTypes, currencyIso, onToggleSeat }: SeatingMapProps) {
+
+    const { t } = useTranslation();
+
     const maxSeatPlace = seatRows.reduce(
         (currentMaximum, row) =>
             row.seats.reduce(
@@ -27,7 +31,7 @@ export function SeatingMap({ seatRows, selectedSeats, ticketTypes, currencyIso, 
     if (seatRows.length === 0) {
         return (
             <p className="text-center text-sm text-zinc-500">
-                No seats are currently available.
+                {t('noSeatsAvailable')}
             </p>
         );
     }
@@ -40,7 +44,7 @@ export function SeatingMap({ seatRows, selectedSeats, ticketTypes, currencyIso, 
                     <div className="h-3 rounded-t-md bg-violet-50 shadow-lg " />
 
                     <p className="mt-2 text-center text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
-                        Stage
+                        {t('stage')}
                     </p>
                 </div>
             </div>
@@ -68,14 +72,14 @@ export function SeatingMap({ seatRows, selectedSeats, ticketTypes, currencyIso, 
                                             currencyIso={currencyIso}
                                             isSelected={selectedSeatIds.has(seat.seatId)}
                                             onToggle={onToggleSeat} />
-                                        );
-                                    }
+                                    );
+                                }
 
                                 return (
                                     <div key={`unavailable-${row.seatRow}-${place}`}
                                         className="flex size-8 cursor-not-allowed items-center justify-center rounded-full bg-zinc-200 text-zinc-400 opacity-60"
-                                        aria-label={`Seat ${place} is unavailable`}
-                                        title={`Seat ${place} is unavailable`}
+                                        aria-label={`${t('seat')} ${place} ${t('seatUnavailable')}`}
+                                        title={`${t('seat')} ${place} ${t('seatUnavailable')}`}
                                     >
                                         <span className="text-xs font-medium">
                                             {place}
@@ -89,15 +93,17 @@ export function SeatingMap({ seatRows, selectedSeats, ticketTypes, currencyIso, 
             </div>
 
             {/* Legend */}
-            <div className="w-full mt-6 lg:mt-auto flex items-center justify-center gap-6 border-t border-zinc-200 pt-4" aria-label="Seat availability legend">
+            <div className="w-full mt-6 lg:mt-auto flex items-center justify-center gap-6 border-t border-zinc-200 pt-4"
+                aria-label={`${t('seat')} – ${t('available')} / ${t('unavailable')}`}
+                >
                 <div className="flex items-center gap-2">
                     <span className="size-4 rounded-full border border-violet-200 bg-violet-50" aria-hidden="true" />
-                    <span className="text-sm text-zinc-600">Available</span>
+                    <span className="text-sm text-zinc-600">{t('available')}</span>
                 </div>
 
                 <div className="flex items-center gap-2">
                     <span className="size-4 rounded-full bg-zinc-200 opacity-60" aria-hidden="true" />
-                    <span className="text-sm text-zinc-600">Unavailable</span>
+                    <span className="text-sm text-zinc-600">{t('unavailable')}</span>
                 </div>
             </div>
 

@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button.tsx';
 import type { LoginRequest } from '@/lib/types.ts';
 import { useEffect, useRef, useState, type FormEvent} from 'react';
-
+import { useTranslation } from '@/hooks/useTranslation.ts';
 interface LoginDialogProps {
     open: boolean;
     isSubmitting: boolean;
@@ -13,6 +13,7 @@ interface LoginDialogProps {
 const inputClassName = 'w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200';
 
 export function LoginDialog({open, isSubmitting, errorMessage, onClose, onSubmit}: LoginDialogProps) {
+    const { t } = useTranslation();
     const dialogRef = useRef<HTMLDialogElement>(null);
 
     // hardcoded credentials for login
@@ -58,12 +59,12 @@ export function LoginDialog({open, isSubmitting, errorMessage, onClose, onSubmit
             <div className="p-6">
                 <header className="mb-6 flex items-start justify-between gap-4">
                     <div>
-                        <h2 id="login-dialog-title" className="text-xl font-semibold">Sign in</h2>
-                        <p className="mt-1 text-sm text-zinc-500">Sign in to your account.</p>
+                        <h2 id="login-dialog-title" className="text-xl font-semibold">{t('signIn')}</h2>
+                        <p className="mt-1 text-sm text-zinc-500">{t('signInToAccount')}.</p>
                     </div>
 
-                    <Button type="button" variant="ghost" size="sm" disabled={isSubmitting} onClick={onClose}>
-                        Close
+                    <Button type="button" variant="outline" size="sm" disabled={isSubmitting} onClick={onClose}>
+                        {t('close')}
                     </Button>
                 </header>
 
@@ -76,7 +77,7 @@ export function LoginDialog({open, isSubmitting, errorMessage, onClose, onSubmit
                 <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
                     <label className="flex flex-col gap-1">
                         <span className="text-sm font-medium">
-                            Email
+                            {t('email')}
                         </span>
 
                         <input
@@ -96,7 +97,7 @@ export function LoginDialog({open, isSubmitting, errorMessage, onClose, onSubmit
 
                     <label className="flex flex-col gap-1">
                         <span className="text-sm font-medium">
-                            Password
+                            {t('password')}
                         </span>
 
                         <input
@@ -115,7 +116,7 @@ export function LoginDialog({open, isSubmitting, errorMessage, onClose, onSubmit
                     </label>
 
                     <Button type="submit" disabled={isSubmitting} className="mt-2">
-                        {isSubmitting ? 'Signing in...' : 'Sign in'}
+                        {isSubmitting ? t('signingIn') : t('signIn')}
                     </Button>
                 </form>
             </div>

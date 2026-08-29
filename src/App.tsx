@@ -1,26 +1,35 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
+import { useTranslation } from '@/hooks/useTranslation.ts';
 
-import { apiGet, apiPost } from "@/lib/api.ts";
+import { apiGet, apiPost } from '@/lib/api.ts';
 import { formatCurrency } from '@/lib/utils.ts';
-import {
+import type {
+	CreateOrderResponse,
 	EventData,
+	LoginRequest,
+	LoginResponse,
 	SeatingData,
 	Seats,
 	UserDetails,
-	LoginRequest,
-	LoginResponse,
-	CreateOrderResponse
-} from "@/lib/types.ts";
+} from '@/lib/types.ts';
 
-import { SeatingMap } from '@/components/SeatingMap.tsx';
-import { CartSummary } from "@/components/CartSummary.tsx";
-import { LoginDialog } from '@/components/LoginDialog.tsx';
-import { CheckoutDialog } from "@/components/ChekoutDialog.tsx";
 import { AddToCalendar } from '@/components/AddToCalendar.tsx';
+import { CartDialog } from '@/components/CartDialog.tsx';
+import { CheckoutDialog } from '@/components/CheckoutDialog';
+import { LoginDialog } from '@/components/LoginDialog.tsx';
+import { SeatingMap } from '@/components/SeatingMap.tsx';
+import { ProfileDialog } from '@/components/ProfileDialog.tsx';
 
 import { Button } from '@/components/ui/button.tsx';
+import { CartButton } from '@/components/ui/cart-button.tsx';
+import { TranslateButton } from '@/components/ui/translate-button.tsx';
 import { Spinner } from '@/components/ui/spinner.tsx';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.tsx';
+import { Logo } from '@/components/ui/logo.tsx';
+import {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from '@/components/ui/avatar.tsx';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -28,14 +37,15 @@ import {
 	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
-	DropdownMenuTrigger
+	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx';
 
 import './App.css';
 
+type AuthNotification = 'login' | 'logout' | null;
 
 function App() {
-
+	const { language, t } = useTranslation();
 	const [eventData, setEventData] = useState<EventData | null>(null);
 	const [seatingData, setSeatingData] = useState<SeatingData | null>(null);
 	const [selectedSeats, setSelectedSeats] = useState<Seats[]>([]);
@@ -47,15 +57,17 @@ function App() {
 	const [isLoginOpen, setIsLoginOpen] = useState(false);
 	const [isLoginSubmitting, setIsLoginSubmitting] = useState(false);
 	const [loginError, setLoginError] = useState<string | null>(null);
+	const [isCartOpen, setIsCartOpen] = useState(false);
+	const [isProfileOpen, setIsProfileOpen] = useState(false);
+	const [authNotification, setAuthNotification] = useState<AuthNotification>(null);
 
-	// Fetch data based on eventId in case of multiple events,
-	// for now we will use the first eventId from the eventData
+	const avatarSrc = "public/ian-dooley-d1UPkiFd04A-unsplash.jpg"
 	const eventId = eventData?.eventId;
 
 	useEffect(() => {
 		const fetchEventData = async (): Promise<void> => {
 			try {
-				const response = await apiGet<EventData>("/event/");
+				const response = await apiGet<EventData>('/event/');
 
 				if (response) {
 					setEventData(response);
@@ -77,7 +89,9 @@ function App() {
 
 		const fetchSeatingData = async (): Promise<void> => {
 			try {
-				const response = await apiGet<SeatingData>(`/event-tickets?eventId=${eventId}`);
+				const response = await apiGet<SeatingData>(
+					`/event-tickets?eventId=${eventId}`
+				);
 
 				if (response) {
 					setSeatingData(response);
@@ -92,20 +106,50 @@ function App() {
 		void fetchSeatingData();
 	}, [eventId]);
 
-	// Handle seat selection and deselection
+	useEffect(() => {
+		if (!completedOrder) {
+			return;
+		}
+
+		const timeoutId = window.setTimeout(() => {
+			setCompletedOrder(null);
+		}, 5000);
+
+		return () => {
+			window.clearTimeout(timeoutId);
+		};
+	}, [completedOrder]);
+
+	useEffect(() => {
+		if (!authNotification) {
+			return;
+		}
+
+		const timeoutId = window.setTimeout(() => {
+			setAuthNotification(null);
+		}, 4000);
+
+		return () => {
+			window.clearTimeout(timeoutId);
+		};
+	}, [authNotification]);
+
 	const handleToggleSeat = (seat: Seats) => {
 		setSelectedSeats((currentSeats) => {
-			const isSelected = currentSeats.some((currentSeat) => currentSeat.seatId === seat.seatId);
+			const isSelected = currentSeats.some(
+				(currentSeat) => currentSeat.seatId === seat.seatId
+			);
 
 			if (isSelected) {
-				return currentSeats.filter((currentSeat) => currentSeat.seatId !== seat.seatId);
+				return currentSeats.filter(
+					(currentSeat) => currentSeat.seatId !== seat.seatId
+				);
 			}
 
 			return [...currentSeats, seat];
 		});
 	};
 
-	// calculate total price for all tickets in the cart
 	const totalPrice = selectedSeats.reduce((total, seat) => {
 		const ticketType = seatingData?.ticketTypes.find(
 			(type) => type.id === seat.ticketTypeId
@@ -114,7 +158,6 @@ function App() {
 		return total + (ticketType?.price ?? 0);
 	}, 0);
 
-	// error handling
 	const getErrorMessage = (error: unknown) => {
 		if (error instanceof Error) {
 			return error.message;
@@ -134,7 +177,10 @@ function App() {
 
 		const order = await apiPost<CreateOrderResponse>('/order', {
 			eventId: eventData.eventId,
-			tickets: selectedSeats.map((seat) => ({ ticketTypeId: seat.ticketTypeId, seatId: seat.seatId })),
+			tickets: selectedSeats.map((seat) => ({
+				ticketTypeId: seat.ticketTypeId,
+				seatId: seat.seatId,
+			})),
 			user,
 		});
 
@@ -165,19 +211,18 @@ function App() {
 		setCheckoutError(null);
 
 		try {
-			const loginResponse = await apiPost<LoginResponse>(
-				'/login',
-				{
-					email: credentials.email,
-					password: credentials.password,
-				}
-			);
+			const loginResponse = await apiPost<LoginResponse>('/login', {
+				email: credentials.email,
+				password: credentials.password,
+			});
 
 			if (!loginResponse) {
 				throw new Error('Sign in failed.');
 			}
 
 			setLoggedInUser(loginResponse.user);
+			setAuthNotification('login');
+
 			await createOrder(loginResponse.user);
 		} catch (error) {
 			setCheckoutError(getErrorMessage(error));
@@ -202,6 +247,7 @@ function App() {
 
 			setLoggedInUser(response.user);
 			setIsLoginOpen(false);
+			setAuthNotification('login');
 		} catch (error) {
 			setLoginError(getErrorMessage(error));
 		} finally {
@@ -209,224 +255,271 @@ function App() {
 		}
 	};
 
-	// hide success message after 5 seconds
-	useEffect(() => {
-		if (!completedOrder) {
+	const handleCheckoutStart = () => {
+		setCheckoutError(null);
+		setCompletedOrder(null);
+		setIsCartOpen(false);
+
+		if (loggedInUser) {
+			void handleGuestCheckout(loggedInUser);
 			return;
 		}
 
-		const timeoutId = window.setTimeout(() => {
-			setCompletedOrder(null);
-		}, 5000);
+		setIsCheckoutOpen(true);
+	};
 
-		return () => {
-			window.clearTimeout(timeoutId);
-		};
-	}, [completedOrder]);
+	const handleLogout = () => {
+		setIsProfileOpen(false);
+		setLoggedInUser(null);
+		setAuthNotification('logout');
+	};
+
+	const eventDateFormatter = new Intl.DateTimeFormat(
+		language === 'cs' ? 'cs-CZ' : 'en-US',
+		{
+			dateStyle: 'medium',
+			timeStyle: 'short',
+		}
+	);
 
 	return (
-		<div className="flex flex-col grow relative">
-			{/* header (wrapper) */}
-			<nav className="sticky top-0 left-0 right-0 bg-white border-b border-zinc-200 flex justify-center">
-				{/* inner content */}
-				<div className="max-w-screen-lg p-4 grow flex items-center justify-between gap-3">
-					{/* application/author image/logo placeholder */}
-					<div className="max-w-[250px] w-full flex">
-						<div className="bg-zinc-100 rounded-md size-12" />
+		<div className="flex grow flex-col gap-4">
+			<nav className="sticky left-0 right-0 top-0 flex justify-center eventron-background">
+				<div className="flex max-w-screen-lg grow items-center justify-between gap-3 p-4">
+					<div className="flex w-full max-w-[250px]">
+						<a href="/" className="inline-flex shrink-0 items-center" aria-label="EVENtron home">
+							<Logo className="h-6 w-auto" />
+						</a>
 					</div>
-					{/* app/author title/name placeholder */}
-					<div className="bg-zinc-100 rounded-md h-8 w-[200px]" />
-					{/* user menu */}
-					<div className="flex w-full max-w-[250px] justify-end">
+
+					<div className="flex w-full max-w-[250px] items-center justify-end gap-3">
+						<TranslateButton></TranslateButton>
+						<CartButton itemCount={selectedSeats.length} onClick={() => setIsCartOpen(true)} />
+
 						{loggedInUser ? (
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
-									<Button variant="ghost">
-										<div className="flex items-center gap-2">
-											<Avatar>
-												<AvatarImage
-													src={`https://source.boringavatars.com/marble/120/${encodeURIComponent(
-														loggedInUser.email
-													)}?colors=25106C,7F46DB`}
-													alt=""
-												/>
-
-												<AvatarFallback>
-													{loggedInUser.firstName.charAt(0)}
-													{loggedInUser.lastName.charAt(0)}
-												</AvatarFallback>
-											</Avatar>
-
-											<div className="flex flex-col text-left">
-												<span className="text-sm font-medium">
-													{loggedInUser.firstName}{' '}
-													{loggedInUser.lastName}
-												</span>
-
-												<span className="text-xs text-zinc-500">
-													{loggedInUser.email}
-												</span>
-											</div>
-										</div>
+									<Button type="button" variant="ghost" size="icon" className="rounded-full" aria-label="Open user menu">
+										<Avatar>
+											<AvatarImage src={avatarSrc} alt={`${loggedInUser.firstName} ${loggedInUser.lastName}`} className="object-cover" />
+											<AvatarFallback>
+												{loggedInUser.firstName.charAt(0)}
+												{loggedInUser.lastName.charAt(0)}
+											</AvatarFallback>
+										</Avatar>
 									</Button>
 								</DropdownMenuTrigger>
 
-								<DropdownMenuContent className="w-[250px]">
+								<DropdownMenuContent className="w-[250px]" align="end">
 									<DropdownMenuLabel>
-										{loggedInUser.firstName}{' '}
-										{loggedInUser.lastName}
+										<span className="block">
+											{loggedInUser.firstName}{' '}
+											{loggedInUser.lastName}
+										</span>
+
+										<span className="block truncate text-xs font-normal text-zinc-500">
+											{loggedInUser.email}
+										</span>
 									</DropdownMenuLabel>
 
 									<DropdownMenuSeparator />
 
 									<DropdownMenuGroup>
-										<DropdownMenuItem onSelect={() => setLoggedInUser(null)}>
-											Logout
+										<DropdownMenuItem onSelect={() => setIsProfileOpen(true)}>
+											{t('userProfile')}
+										</DropdownMenuItem>
+
+										<DropdownMenuItem onSelect={handleLogout}>
+											{t('logout')}
 										</DropdownMenuItem>
 									</DropdownMenuGroup>
 								</DropdownMenuContent>
 							</DropdownMenu>
 						) : (
-							<Button type="button" variant="default" onClick={() => {
-								setLoginError(null);
-								setIsLoginOpen(true);
-							}}
-							>
-								Login
+							<Button type="button" variant="default" onClick={() => { setLoginError(null), setIsLoginOpen(true) }}>
+								{t('login')}
 							</Button>
 						)}
 					</div>
 				</div>
 			</nav>
 
-			{/* main body (wrapper) */}
-			<main className="grow flex flex-col justify-center">
-				{/* inner content */}
-				<div className="max-w-screen-lg m-auto p-4 flex items-center flex-col-reverse lg:flex-row lg:items-start grow gap-3 w-full ">
-					{/* seating card */}
-					<div className="bg-white rounded-md grow overflow-x-auto overflow-y-auto p-3 self-stretch shadow-sm" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))', gridAutoRows: '40px' }}>
-
+			<main className="flex grow flex-col justify-center">
+				<div className="m-auto flex w-full max-w-screen-lg grow flex-col-reverse items-center gap-3 p-4 lg:flex-row lg:items-start">
+					<div
+						className="self-stretch overflow-x-auto overflow-y-auto rounded-md bg-white p-3 shadow-sm lg:grow"
+						style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))', gridAutoRows: '40px' }}
+					>
 						{seatingData ? (
 							<SeatingMap
 								seatRows={seatingData.seatRows}
 								ticketTypes={seatingData.ticketTypes}
 								selectedSeats={selectedSeats}
 								currencyIso={eventData?.currencyIso ?? 'CZK'}
-								onToggleSeat={handleToggleSeat} />
+								onToggleSeat={handleToggleSeat}
+							/>
 						) : (
-							<>
-								{/* seating loading state (spiner) */}
-								<Spinner label="Loading seating data" />
-							</>
+							<Spinner label={t('loadingSeatingData')} />
 						)}
-
 					</div>
 
-					{/* event info */}
-					<aside className="w-full max-w-sm bg-white rounded-md shadow-sm p-3 flex flex-col gap-2">
+					<aside className="flex w-full lg:max-w-96 flex-col gap-2 rounded-md bg-white p-3 shadow-sm">
 						{eventData ? (
 							<>
-								{/* event header image placeholder */}
-								<div className="bg-zinc-100 rounded-md h-32" style={{ backgroundImage: `url(${eventData?.headerImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-								{/* event name */}
-								<h1 className="text-xl text-zinc-900 font-semibold">{eventData?.namePub}</h1>
-								{/* event description */}
-								<p className="text-sm text-zinc-500">{eventData?.description}</p>
-								{/* event date, time and place */}
-								<small className="text-xs text-zinc-900"><em>Datum zahájení: {eventData?.dateFrom?.slice(0, 10)} v {eventData?.dateFrom?.slice(11, 16)}</em></small>
-								<small className="text-xs text-zinc-900"><em>Datum ukončení: {eventData?.dateTo?.slice(0, 10)} v {eventData?.dateTo?.slice(11, 16)}</em></small>
-								<small className="text-xs text-zinc-900"><em>Místo konání: {eventData?.place.slice(12,)}</em></small>
-								{/* add to calendar button */}
+								<div className="rounded-md bg-zinc-100 h-96 w-full sm:h-60"
+									style={{
+										backgroundImage: `url(${eventData.headerImageUrl})`,
+										backgroundPosition: 'center',
+										backgroundSize: 'cover',
+									}}
+								/>
+
+								<h1 className="text-xl font-semibold text-zinc-900">
+									{eventData.namePub}
+								</h1>
+
+								<p className="text-sm text-zinc-500">
+									{eventData.description}
+								</p>
+
+								<small className="text-xs text-zinc-900">
+									<em>
+										<strong>{t('eventStarts')}:</strong>{' '}
+										<time dateTime={eventData.dateFrom}>
+											{eventDateFormatter.format(new Date(eventData.dateFrom))}
+										</time>
+									</em>
+								</small>
+
+								<small className="text-xs text-zinc-900">
+									<em>
+										<strong>{t('eventEnds')}:</strong>{' '}
+										<time dateTime={eventData.dateTo}>
+											{eventDateFormatter.format(new Date(eventData.dateTo))}
+										</time>
+									</em>
+								</small>
+
+								<small className="text-xs text-zinc-900">
+									<em>
+										<strong>{t('venue')}:</strong>{' '}
+										{eventData.place}
+									</em>
+								</small>
+
 								<AddToCalendar event={eventData} />
 							</>
 						) : (
-							<>
-								{/* event loading state (spiner) */}
-								<Spinner label="Loading event data" />
-							</>
+							<Spinner label={t('loadingEventData')} />
 						)}
-
 					</aside>
 				</div>
 			</main>
 
-			{/* bottom cart affix (wrapper) */}
-			<footer className="sticky bottom-0 left-0 right-0 border-t border-zinc-200 bg-white">
-				<div className="mx-auto flex justify-between max-w-screen-lg flex-col gap-4 p-4 md:flex-row md:items-center md:p-6">
-					{/* Total */}
-					<div className="flex shrink-0 flex-col">
-						<span>
-							Total for {selectedSeats.length}{' '}
-							{selectedSeats.length === 1 ? 'ticket' : 'tickets'}
-						</span>
+			<footer className="eventron-background min-h-40">
+				<div className="mx-auto flex w-full max-w-screen-lg flex-col gap-6 p-6">
+					<div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+						<Logo className="h-4 w-auto" />
 
-						<span className="text-2xl font-semibold">
-							{eventData ? formatCurrency(totalPrice, eventData.currencyIso) : '—'}
-						</span>
+						<p className="w-1/2 w-full:sm text-xs text-zinc-500">
+							{t('footerIntroduction')}{' '}
+							<a href="https://www.nfctron.com/" target="_blank" rel="noreferrer" className="text-violet-600 hover:text-violet-700 hover:underline">
+								NFCtron
+							</a>
+							. {t('footerDisclaimer')}
+						</p>
 					</div>
 
-					{/* Selected seats */}
-					<CartSummary
-						selectedSeats={selectedSeats}
-						seatRows={seatingData?.seatRows ?? []}
-						ticketTypes={seatingData?.ticketTypes ?? []}
-						currencyIso={eventData?.currencyIso ?? 'CZK'}
-						onRemoveSeat={handleToggleSeat}
-					/>
+					<div className="flex flex-col justify-between gap-2 border-t border-zinc-200 pt-4 text-xs text-zinc-500 sm:flex-row sm:items-center">
+						<p>
+							&copy; {new Date().getFullYear()}{' '}
+							<a href="https://nazar-portfolio-react.vercel.app/" target="_blank" rel="noreferrer" className="text-violet-600 hover:text-violet-700 hover:underline">
+								Nazar Pichak
+							</a>
+							. {t('allRightsReserved')}
+						</p>
 
-					{/* Checkout */}
-					<Button
-						type="button"
-						variant="default"
-						disabled={selectedSeats.length === 0 || isSubmitting}
-						className="shrink-0"
-						onClick={() => {
-							setCheckoutError(null);
-							setCompletedOrder(null);
-
-							if (loggedInUser) {
-								void handleGuestCheckout(loggedInUser);
-								return;
-							}
-
-							setIsCheckoutOpen(true);
-						}}
-					>
-						{isSubmitting ? 'Creating order...' : 'Checkout now'}
-					</Button>
+						<p>
+							{t('builtWith')}{' '}
+							<a href="https://react.dev/" target="_blank" rel="noreferrer" className="text-violet-600 hover:text-violet-700 hover:underline">
+								React
+							</a>
+							,{' '}
+							<a href="https://www.typescriptlang.org/" target="_blank" rel="noreferrer" className="text-violet-600 hover:text-violet-700 hover:underline">
+								TypeScript
+							</a>{' '}
+							{t('and')}{' '}
+							<a href="https://tailwindcss.com/" target="_blank" rel="noreferrer" className="text-violet-600 hover:text-violet-700 hover:underline">
+								Tailwind CSS
+							</a>
+						</p>
+					</div>
 				</div>
 			</footer>
 
-			{/* success message dialog */}
-			{completedOrder && (
-				<div
-					className="fixed right-4 top-4 z-50 w-[calc(100%-2rem)] max-w-sm rounded-md border border-green-200 bg-green-50 p-4 text-green-800 shadow-lg"
-					role="status"
-					aria-live="polite"
-				>
-					<p className="font-semibold">Order created successfully</p>
-					<p className="mt-1 text-sm">Order ID: {completedOrder.orderId}</p>
-					<p className="text-sm">{completedOrder.message}</p>
-					<p className="mt-2 text-sm font-semibold">
-						Total:{' '}
-						{eventData ? formatCurrency(completedOrder.totalAmount, eventData.currencyIso): completedOrder.totalAmount}
-					</p>
-				</div>
-			)}
+			<div className="w-full h-96 absolute -z-10 eventron-background"></div>
 
-			{/* checkout dialog */}
-			<CheckoutDialog open={isCheckoutOpen} isSubmitting={isSubmitting} errorMessage={checkoutError}
+			<div className="fixed right-4 top-4 z-50 flex w-[calc(100%-2rem)] max-w-sm flex-col gap-3">
+
+				{authNotification && (
+					<div className="rounded-md border border-green-200 bg-green-50 p-4 text-green-800 shadow-lg" role="status" aria-live="polite">
+						<p className="text-sm">{authNotification === 'login' ? t('loginSuccessful') : t('logoutSuccessful')}</p>
+					</div>
+				)}
+
+				{completedOrder && (
+					<div
+						className="rounded-md border border-green-200 bg-green-50 p-4 text-green-800 shadow-lg"
+						role="status"
+						aria-live="polite"
+					>
+						<p className="font-semibold">{t('orderCreated')}</p>
+						<p className="mt-1 text-sm">{t('orderId')}: {completedOrder.orderId}</p>
+						<p className="text-sm">{completedOrder.message}</p>
+						<p className="mt-2 text-sm font-semibold">
+							{t('total')}:{' '}
+							{eventData ? formatCurrency( completedOrder.totalAmount, eventData.currencyIso, language) : completedOrder.totalAmount}
+						</p>
+					</div>
+				)}
+			</div>
+
+			<CartDialog
+				open={isCartOpen}
+				selectedSeats={selectedSeats}
+				seatRows={seatingData?.seatRows ?? []}
+				ticketTypes={seatingData?.ticketTypes ?? []}
+				currencyIso={eventData?.currencyIso ?? 'CZK'}
+				totalPrice={totalPrice}
+				isSubmitting={isSubmitting}
+				onClose={() => setIsCartOpen(false)}
+				onRemoveSeat={handleToggleSeat}
+				onCheckout={handleCheckoutStart}
+			/>
+
+			<CheckoutDialog
+				open={isCheckoutOpen}
+				isSubmitting={isSubmitting}
+				errorMessage={checkoutError}
 				onClose={() => { setCheckoutError(null), setIsCheckoutOpen(false) }}
 				onGuestSubmit={handleGuestCheckout}
 				onLoginSubmit={handleLoginCheckout}
 			/>
 
-			{/* login dialog */}
-			<LoginDialog open={isLoginOpen} isSubmitting={isLoginSubmitting} errorMessage={loginError}
+			<LoginDialog
+				open={isLoginOpen}
+				isSubmitting={isLoginSubmitting}
+				errorMessage={loginError}
 				onClose={() => { setLoginError(null), setIsLoginOpen(false) }}
 				onSubmit={handleStandaloneLogin}
 			/>
 
+			<ProfileDialog
+				open={isProfileOpen}
+				user={loggedInUser}
+				avatarSrc={avatarSrc}
+				onClose={() => setIsProfileOpen(false)}
+			/>
 		</div>
 	);
 }

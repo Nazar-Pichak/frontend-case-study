@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button.tsx';
-import type { LoginRequest, UserDetails} from '@/lib/types.ts';
-import { useEffect, useRef, useState, type FormEvent} from 'react';
+import type { LoginRequest, UserDetails } from '@/lib/types.ts';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useTranslation } from '@/hooks/useTranslation.ts';
 
 type CheckoutMode = 'choice' | 'guest' | 'login';
 
@@ -13,7 +14,7 @@ interface CheckoutDialogProps {
     onLoginSubmit: (credentials: LoginRequest) => void;
 }
 
-const inputClassName ='w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200';
+const inputClassName = 'w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200';
 
 export function CheckoutDialog({
     open,
@@ -23,10 +24,11 @@ export function CheckoutDialog({
     onGuestSubmit,
     onLoginSubmit,
 }: CheckoutDialogProps) {
+    const { t } = useTranslation();
     const dialogRef = useRef<HTMLDialogElement>(null);
     const [mode, setMode] = useState<CheckoutMode>('choice');
-    const [guest, setGuest] = useState<UserDetails>({email: '', firstName: '', lastName: ''});
-    const [credentials, setCredentials] = useState<LoginRequest>({ email: 'frontend@nfctron.com', password: 'Nfctron2025'});
+    const [guest, setGuest] = useState<UserDetails>({ email: '', firstName: '', lastName: '' });
+    const [credentials, setCredentials] = useState<LoginRequest>({ email: 'frontend@nfctron.com', password: 'Nfctron2025' });
 
     useEffect(() => {
         const dialog = dialogRef.current;
@@ -70,12 +72,12 @@ export function CheckoutDialog({
             <div className="p-6">
                 <header className="mb-6 flex items-start justify-between gap-4">
                     <div>
-                        <h2 id="checkout-dialog-title" className="text-xl font-semibold">Checkout</h2>
-                        <p className="mt-1 text-sm text-zinc-500">Choose how you want to continue.</p>
+                        <h2 id="checkout-dialog-title" className="text-xl font-semibold">{t('checkout')}</h2>
+                        <p className="mt-1 text-sm text-zinc-500">{t('chooseCheckoutMethod')}</p>
                     </div>
 
-                    <Button type="button" variant="ghost" size="sm" disabled={isSubmitting} onClick={onClose} aria-label="Close checkout">
-                        Close
+                    <Button type="button" variant="outline" size="sm" disabled={isSubmitting} onClick={onClose} aria-label="Close checkout">
+                        {t('close')}
                     </Button>
                 </header>
 
@@ -88,11 +90,11 @@ export function CheckoutDialog({
                 {mode === 'choice' && (
                     <div className="flex flex-col gap-3">
                         <Button type="button" onClick={() => setMode('guest')}>
-                            Continue as guest
+                            {t('continueAsGuest')}
                         </Button>
 
                         <Button type="button" variant="outline" onClick={() => setMode('login')}>
-                            Sign in
+                            {t('signIn')}
                         </Button>
                     </div>
                 )}
@@ -101,7 +103,7 @@ export function CheckoutDialog({
                     <form className="flex flex-col gap-4" onSubmit={handleGuestSubmit}>
                         <label className="flex flex-col gap-1">
                             <span className="text-sm font-medium">
-                                First name
+                                {t('firstName')}
                             </span>
 
                             <input
@@ -121,7 +123,7 @@ export function CheckoutDialog({
 
                         <label className="flex flex-col gap-1">
                             <span className="text-sm font-medium">
-                                Last name
+                                {t('lastName')}
                             </span>
 
                             <input
@@ -141,7 +143,7 @@ export function CheckoutDialog({
 
                         <label className="flex flex-col gap-1">
                             <span className="text-sm font-medium">
-                                Email
+                                {t('email')}
                             </span>
 
                             <input
@@ -160,23 +162,12 @@ export function CheckoutDialog({
                         </label>
 
                         <div className="mt-2 flex gap-3">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                disabled={isSubmitting}
-                                onClick={() => setMode('choice')}
-                            >
-                                Back
+                            <Button type="button" variant="outline" disabled={isSubmitting} onClick={() => setMode('choice')}>
+                                {t('back')}
                             </Button>
 
-                            <Button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="flex-1"
-                            >
-                                {isSubmitting
-                                    ? 'Creating order...'
-                                    : 'Create order'}
+                            <Button type="submit" disabled={isSubmitting} className="flex-1">
+                                {isSubmitting ? t('creatingOrder') : t('createOrder')}
                             </Button>
                         </div>
                     </form>
@@ -186,7 +177,7 @@ export function CheckoutDialog({
                     <form className="flex flex-col gap-4" onSubmit={handleLoginSubmit}>
                         <label className="flex flex-col gap-1">
                             <span className="text-sm font-medium">
-                                Email
+                                {t('email')}
                             </span>
 
                             <input
@@ -208,7 +199,7 @@ export function CheckoutDialog({
 
                         <label className="flex flex-col gap-1">
                             <span className="text-sm font-medium">
-                                Password
+                                {t('password')}
                             </span>
 
                             <input
@@ -229,23 +220,12 @@ export function CheckoutDialog({
                         </label>
 
                         <div className="mt-2 flex gap-3">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                disabled={isSubmitting}
-                                onClick={() => setMode('choice')}
-                            >
-                                Back
+                            <Button type="button" variant="outline" disabled={isSubmitting} onClick={() => setMode('choice')}>
+                                {t('back')}
                             </Button>
 
-                            <Button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="flex-1"
-                            >
-                                {isSubmitting
-                                    ? 'Signing in...'
-                                    : 'Sign in and continue'}
+                            <Button type="submit" disabled={isSubmitting} className="flex-1">
+                                {isSubmitting ? t('signingIn') : t('signInAndContinue')}
                             </Button>
                         </div>
                     </form>
