@@ -70,7 +70,7 @@ const englishTranslations = {
 
     orderId: 'Order ID',
 
-    footerIntroduction: 'EVENtron is a frontend application for seat reservations and is created for',
+    footerIntroduction: 'EVENtron is a frontend application for seat reservations and was created for',
     footerDisclaimer: 'It is an educational case study — not an official NFCtron product.',
     allRightsReserved: 'All rights reserved.',
     builtWith: 'Built with',

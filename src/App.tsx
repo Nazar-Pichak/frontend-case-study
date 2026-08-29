@@ -61,7 +61,7 @@ function App() {
 	const [isProfileOpen, setIsProfileOpen] = useState(false);
 	const [authNotification, setAuthNotification] = useState<AuthNotification>(null);
 
-	const avatarSrc = "public/ian-dooley-d1UPkiFd04A-unsplash.jpg"
+	const avatarSrc = "/ian-dooley-d1UPkiFd04A-unsplash.jpg"
 	const eventId = eventData?.eventId;
 
 	useEffect(() => {
