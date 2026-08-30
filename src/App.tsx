@@ -25,6 +25,7 @@ import { CartButton } from '@/components/ui/cart-button.tsx';
 import { TranslateButton } from '@/components/ui/translate-button.tsx';
 import { Spinner } from '@/components/ui/spinner.tsx';
 import { Logo } from '@/components/ui/logo.tsx';
+import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button.tsx';
 import {
 	Avatar,
 	AvatarFallback,
@@ -531,6 +532,8 @@ function App() {
 				avatarSrc={avatarSrc}
 				onClose={() => setIsProfileOpen(false)}
 			/>
+
+			<ScrollToTopButton />
 		</div>
 	);
 }
