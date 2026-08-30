@@ -60,6 +60,7 @@ function App() {
 	const [isCartOpen, setIsCartOpen] = useState(false);
 	const [isProfileOpen, setIsProfileOpen] = useState(false);
 	const [authNotification, setAuthNotification] = useState<AuthNotification>(null);
+	const [unavailableSeatIds, setUnavailableSeatIds] = useState<Set<string>>(() => new Set());
 
 	const avatarSrc = "/ian-dooley-d1UPkiFd04A-unsplash.jpg"
 	const eventId = eventData?.eventId;
@@ -189,6 +190,13 @@ function App() {
 		}
 
 		setCompletedOrder(order);
+
+		setUnavailableSeatIds((currentIds) => {
+			const updatedIds = new Set(currentIds);
+			selectedSeats.forEach((seat) => {updatedIds.add(seat.seatId)});
+			return updatedIds;
+		});
+
 		setSelectedSeats([]);
 		setIsCartOpen(false);
 		setIsCheckoutOpen(false);
@@ -356,6 +364,7 @@ function App() {
 								seatRows={seatingData.seatRows}
 								ticketTypes={seatingData.ticketTypes}
 								selectedSeats={selectedSeats}
+								unavailableSeatIds={unavailableSeatIds}
 								currencyIso={eventData?.currencyIso ?? 'CZK'}
 								onToggleSeat={handleToggleSeat}
 							/>
@@ -479,7 +488,7 @@ function App() {
 						<p className="text-sm">{completedOrder.message}</p>
 						<p className="mt-2 text-sm font-semibold">
 							{t('total')}:{' '}
-							{eventData ? formatCurrency( completedOrder.totalAmount, eventData.currencyIso, language) : completedOrder.totalAmount}
+							{eventData ? formatCurrency(completedOrder.totalAmount, eventData.currencyIso, language) : completedOrder.totalAmount}
 						</p>
 					</div>
 				)}

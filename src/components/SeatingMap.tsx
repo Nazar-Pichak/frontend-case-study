@@ -5,12 +5,13 @@ import { useTranslation } from '@/hooks/useTranslation.ts';
 interface SeatingMapProps {
     seatRows: SeatRows[];
     selectedSeats: Seats[];
+    unavailableSeatIds: ReadonlySet<string>;
     ticketTypes: TicketTypes[];
     currencyIso: string;
     onToggleSeat: (seat: Seats) => void;
 }
 
-export function SeatingMap({ seatRows, selectedSeats, ticketTypes, currencyIso, onToggleSeat }: SeatingMapProps) {
+export function SeatingMap({ seatRows, selectedSeats, unavailableSeatIds, ticketTypes, currencyIso, onToggleSeat }: SeatingMapProps) {
 
     const { t } = useTranslation();
 
@@ -61,8 +62,9 @@ export function SeatingMap({ seatRows, selectedSeats, ticketTypes, currencyIso, 
 
                             {Array.from({ length: maxSeatPlace }, (_, index) => index + 1).map((place) => {
                                 const seat = seatsByPlace.get(place);
+                                const isMySeat = seat !== undefined && unavailableSeatIds.has(seat.seatId);
 
-                                if (seat) {
+                                if (seat && !isMySeat) {
                                     const ticketType = ticketTypes.find((t) => t.id === seat.ticketTypeId);
                                     return (
                                         <Seat
@@ -75,15 +77,27 @@ export function SeatingMap({ seatRows, selectedSeats, ticketTypes, currencyIso, 
                                     );
                                 }
 
+                                if (seat && isMySeat) {
+                                    return (
+                                        <div
+                                            key={`purchased-${seat.seatId}`}
+                                            className="flex size-8 cursor-not-allowed items-center justify-center rounded-full border border-violet-500 bg-violet-400 text-white"
+                                            aria-label={`${t('seat')} ${place}, ${t('mySeat')}`}
+                                            title={`${t('seat')} ${place} – ${t('mySeat')}`}
+                                        >
+                                            <span className="text-xs font-semibold">{place}</span>
+                                        </div>
+                                    );
+                                }
+
                                 return (
-                                    <div key={`unavailable-${row.seatRow}-${place}`}
+                                    <div
+                                        key={`unavailable-${row.seatRow}-${place}`}
                                         className="flex size-8 cursor-not-allowed items-center justify-center rounded-full bg-zinc-200 text-zinc-400 opacity-60"
-                                        aria-label={`${t('seat')} ${place} ${t('seatUnavailable')}`}
-                                        title={`${t('seat')} ${place} ${t('seatUnavailable')}`}
+                                        aria-label={`${t('seat')} ${place}, ${t('seatUnavailable')}`}
+                                        title={`${t('seat')} ${place} – ${t('seatUnavailable')}`}
                                     >
-                                        <span className="text-xs font-medium">
-                                            {place}
-                                        </span>
+                                        <span className="text-xs font-medium">{place}</span>
                                     </div>
                                 );
                             })}
@@ -95,7 +109,7 @@ export function SeatingMap({ seatRows, selectedSeats, ticketTypes, currencyIso, 
             {/* Legend */}
             <div className="w-full mt-6 lg:mt-auto flex items-center justify-center gap-6 border-t border-zinc-200 pt-4"
                 aria-label={`${t('seat')} – ${t('available')} / ${t('unavailable')}`}
-                >
+            >
                 <div className="flex items-center gap-2">
                     <span className="size-4 rounded-full border border-violet-200 bg-violet-50" aria-hidden="true" />
                     <span className="text-sm text-zinc-600">{t('available')}</span>
@@ -104,6 +118,11 @@ export function SeatingMap({ seatRows, selectedSeats, ticketTypes, currencyIso, 
                 <div className="flex items-center gap-2">
                     <span className="size-4 rounded-full bg-zinc-200 opacity-60" aria-hidden="true" />
                     <span className="text-sm text-zinc-600">{t('unavailable')}</span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                    <span className="size-4 rounded-full border border-violet-500 bg-violet-400" aria-hidden="true" />
+                    <span className="text-sm text-zinc-600">{t('mySeat')}</span>
                 </div>
             </div>
 

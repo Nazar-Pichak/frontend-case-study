@@ -54,6 +54,7 @@ const englishTranslations = {
     seatAvailable: 'available',
     seatUnavailable: 'unavailable',
     seatSelected: 'selected',
+    mySeat: 'My seat',
 
     signInToAccount: 'Sign in to your account',
 
@@ -134,6 +135,7 @@ const czechTranslations: Record<TranslationKey, string> = {
     seatAvailable: 'dostupné',
     seatUnavailable: 'nedostupné',
     seatSelected: 'vybrané',
+    mySeat: 'Moje sedadlo',
 
     signInToAccount: 'Přihlaste se ke svému účtu',
 
