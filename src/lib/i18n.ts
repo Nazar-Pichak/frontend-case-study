@@ -22,6 +22,8 @@ const englishTranslations = {
     checkoutNow: 'Checkout now',
     creatingOrder: 'Creating order...',
 
+    changeLanguage: 'Change language',
+
     stage: 'Stage',
     available: 'Available',
     unavailable: 'Unavailable',
@@ -77,6 +79,8 @@ const englishTranslations = {
     builtWith: 'Built with',
     and: 'and',
 
+    scrollToTop: 'Scroll to top',
+
 } as const;
 
 export type TranslationKey = keyof typeof englishTranslations;
@@ -102,6 +106,8 @@ const czechTranslations: Record<TranslationKey, string> = {
     total: 'Celkem',
     checkoutNow: 'Pokračovat k objednávce',
     creatingOrder: 'Vytvářím objednávku...',
+
+    changeLanguage: 'Změnit jazyk',
 
     stage: 'Pódium',
     available: 'Dostupné',
@@ -157,6 +163,8 @@ const czechTranslations: Record<TranslationKey, string> = {
     allRightsReserved: 'Všechna práva vyhrazena.',
     builtWith: 'Vytvořeno pomocí',
     and: 'a',
+
+    scrollToTop: 'Přejít nahoru',
 };
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
