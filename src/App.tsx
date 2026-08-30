@@ -62,6 +62,8 @@ function App() {
 	const [isProfileOpen, setIsProfileOpen] = useState(false);
 	const [authNotification, setAuthNotification] = useState<AuthNotification>(null);
 	const [unavailableSeatIds, setUnavailableSeatIds] = useState<Set<string>>(() => new Set());
+	// Store seats purchased by an authenticated user separately.
+	const [mySeatIds, setMySeatIds] = useState<Set<string>>(() => new Set());
 
 	const avatarSrc = "/ian-dooley-d1UPkiFd04A-unsplash.jpg"
 	const eventId = eventData?.eventId;
@@ -168,7 +170,7 @@ function App() {
 		return 'An unexpected error occurred.';
 	};
 
-	const createOrder = async (user: UserDetails) => {
+	const createOrder = async (user: UserDetails, isAuthenticatedPurchase = false) => {
 		if (!eventData) {
 			throw new Error('Event data is not available.');
 		}
@@ -192,11 +194,32 @@ function App() {
 
 		setCompletedOrder(order);
 
+		// Preserve the IDs before clearing the selected seats.
+		const purchasedSeatIds = selectedSeats.map((seat) => seat.seatId);
+
+		// Every purchased seat becomes unavailable.
 		setUnavailableSeatIds((currentIds) => {
 			const updatedIds = new Set(currentIds);
-			selectedSeats.forEach((seat) => { updatedIds.add(seat.seatId) });
+
+			purchasedSeatIds.forEach((seatId) => {
+				updatedIds.add(seatId);
+			});
+
 			return updatedIds;
 		});
+
+		if (isAuthenticatedPurchase) {
+			// Mark authenticated purchases as belonging to the current user.
+			setMySeatIds((currentIds) => {
+				const updatedIds = new Set(currentIds);
+
+				purchasedSeatIds.forEach((seatId) => {
+					updatedIds.add(seatId);
+				});
+
+				return updatedIds;
+			});
+		}
 
 		setSelectedSeats([]);
 		setIsCartOpen(false);
@@ -225,7 +248,8 @@ function App() {
 
 		try {
 			const user = await login(credentials);
-			await createOrder(user);
+			// The user authenticated before creating this order.
+			await createOrder(user, true);
 		} catch (error) {
 			setCheckoutError(getErrorMessage(error));
 		} finally {
@@ -253,12 +277,13 @@ function App() {
 		setAuthNotification('logout');
 	};
 
-	const handleGuestCheckout = async (user: UserDetails) => {
+	const handleGuestCheckout = async (user: UserDetails, isAuthenticatedPurchase = false) => {
 		setIsSubmitting(true);
 		setCheckoutError(null);
 
 		try {
-			await createOrder(user);
+			// Forward the authentication state to the order handler.
+			await createOrder(user, isAuthenticatedPurchase);
 		} catch (error) {
 			setCheckoutError(getErrorMessage(error));
 		} finally {
@@ -271,7 +296,8 @@ function App() {
 		setCompletedOrder(null);
 
 		if (loggedInUser) {
-			void handleGuestCheckout(loggedInUser);
+			// Mark seats from an authenticated checkout as belonging to this user.
+			void handleGuestCheckout(loggedInUser, true);
 			return;
 		}
 
@@ -355,13 +381,15 @@ function App() {
 						className="self-stretch overflow-x-auto overflow-y-auto rounded-md bg-white p-3 shadow-sm lg:grow"
 						style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))', gridAutoRows: '40px' }}
 					>
-						{seatingData ? (
+						{seatingData && eventData ? (
 							<SeatingMap
 								seatRows={seatingData.seatRows}
 								ticketTypes={seatingData.ticketTypes}
+								currencyIso={eventData.currencyIso}
 								selectedSeats={selectedSeats}
 								unavailableSeatIds={unavailableSeatIds}
-								currencyIso={eventData?.currencyIso ?? 'CZK'}
+								mySeatIds={mySeatIds}
+								showMySeats={loggedInUser !== null}
 								onToggleSeat={handleToggleSeat}
 							/>
 						) : (

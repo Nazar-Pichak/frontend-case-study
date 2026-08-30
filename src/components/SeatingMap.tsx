@@ -4,14 +4,25 @@ import { useTranslation } from '@/hooks/useTranslation.ts';
 
 interface SeatingMapProps {
     seatRows: SeatRows[];
-    selectedSeats: Seats[];
-    unavailableSeatIds: ReadonlySet<string>;
     ticketTypes: TicketTypes[];
     currencyIso: string;
+    selectedSeats: Seats[];
+    unavailableSeatIds: Set<string>;
+    mySeatIds: Set<string>;
+    showMySeats: boolean;
     onToggleSeat: (seat: Seats) => void;
 }
 
-export function SeatingMap({ seatRows, selectedSeats, unavailableSeatIds, ticketTypes, currencyIso, onToggleSeat }: SeatingMapProps) {
+export function SeatingMap({
+    seatRows,
+    ticketTypes,
+    currencyIso,
+    selectedSeats,
+    unavailableSeatIds,
+    mySeatIds,
+    showMySeats,
+    onToggleSeat,
+}: SeatingMapProps) {
 
     const { t } = useTranslation();
 
@@ -62,9 +73,10 @@ export function SeatingMap({ seatRows, selectedSeats, unavailableSeatIds, ticket
 
                             {Array.from({ length: maxSeatPlace }, (_, index) => index + 1).map((place) => {
                                 const seat = seatsByPlace.get(place);
-                                const isMySeat = seat !== undefined && unavailableSeatIds.has(seat.seatId);
+                                const isUnavailable = seat !== undefined && unavailableSeatIds.has(seat.seatId);
+                                const isMySeat = isUnavailable && showMySeats && mySeatIds.has(seat.seatId);
 
-                                if (seat && !isMySeat) {
+                                if (seat && !isUnavailable) {
                                     const ticketType = ticketTypes.find((t) => t.id === seat.ticketTypeId);
                                     return (
                                         <Seat
@@ -119,11 +131,13 @@ export function SeatingMap({ seatRows, selectedSeats, unavailableSeatIds, ticket
                     <span className="size-4 rounded-full bg-zinc-200 opacity-60" aria-hidden="true" />
                     <span className="text-sm text-zinc-600">{t('unavailable')}</span>
                 </div>
-                
-                <div className="flex items-center gap-2">
-                    <span className="size-4 rounded-full border border-violet-500 bg-violet-400" aria-hidden="true" />
-                    <span className="text-sm text-zinc-600">{t('mySeat')}</span>
-                </div>
+
+                {showMySeats && (
+                    <div className="flex items-center gap-2">
+                        <span className="size-4 rounded-full border border-violet-500 bg-violet-400" aria-hidden="true" />
+                        <span className="text-sm text-zinc-600">{t('mySeat')}</span>
+                    </div>
+                )}
             </div>
 
         </div>

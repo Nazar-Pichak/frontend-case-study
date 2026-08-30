@@ -24,7 +24,7 @@ class ApiError extends Error {
 	status: number;
 
 	constructor(status: number, statusText: string) {
-		super(`Network response was not ok: ${status} ${statusText}`);
+		super(`Error: ${status} ${statusText}. Try again now.`);
 		this.name = 'ApiError';
 		this.status = status;
 	}
@@ -40,9 +40,6 @@ const fetchData : FetchData = (url, requestOptions) => {
             if (!response.ok) {
                 // Preserve the HTTP status so callers can decide whether to retry.
                 const error = new ApiError(response.status, response.statusText);
-
-                // Log the HTTP error before passing it to the caller.
-                console.error(error);
 
                 throw error;
             }
