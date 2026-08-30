@@ -7,6 +7,29 @@ import type { FetchData, ApiGet, ApiPost, ApiPut, ApiDelete } from './types.ts';
 // and production to avoid browser CORS restrictions.
 const API_BASE_URL = '/api';
 
+// HTTP status codes that usually indicate a temporary server or gateway issue.
+const RETRYABLE_STATUS_CODES = new Set([502, 503, 504]);
+
+// A GET request can safely be retried because it does not modify server data.
+const GET_RETRY_COUNT = 2;
+const RETRY_DELAY_MS = 750;
+
+// Pause before the next attempt to avoid immediately overloading the API again.
+const wait = (delay: number) =>
+	new Promise<void>((resolve) => {
+		window.setTimeout(resolve, delay);
+	});
+
+class ApiError extends Error {
+	status: number;
+
+	constructor(status: number, statusText: string) {
+		super(`Network response was not ok: ${status} ${statusText}`);
+		this.name = 'ApiError';
+		this.status = status;
+	}
+}
+
 const fetchData : FetchData = (url, requestOptions) => {
     const apiUrl = `${API_BASE_URL}${url}`;
     // Remove trailing '?' if present
@@ -15,7 +38,13 @@ const fetchData : FetchData = (url, requestOptions) => {
     return fetch(cleanedApiUrl, requestOptions)
         .then((response) => {
             if (!response.ok) {
-                throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+                // Preserve the HTTP status so callers can decide whether to retry.
+                const error = new ApiError(response.status, response.statusText);
+
+                // Log the HTTP error before passing it to the caller.
+                console.error(error);
+
+                throw error;
             }
 
             if (requestOptions.method !== 'DELETE')
@@ -26,21 +55,47 @@ const fetchData : FetchData = (url, requestOptions) => {
         });
 };
 
-export const apiGet: ApiGet = (url, params) => {
-    const searchParams = new URLSearchParams();
+export const apiGet: ApiGet = async (url, params) => {
+	const searchParams = new URLSearchParams();
 
-    Object.entries(params ?? {}).forEach(([key, value]) => {
-        if (value != null) {
-            searchParams.set(key, String(value));
-        }
-    });
+	// Add only defined values and convert every query parameter to text.
+	Object.entries(params ?? {}).forEach(([key, value]) => {
+		if (value != null) {
+			searchParams.set(key, String(value));
+		}
+	});
 
-    const queryString = searchParams.toString();
-    const apiUrl = queryString ? `${url}?${queryString}` : url;
+	const queryString = searchParams.toString();
+	const apiUrl = queryString ? `${url}?${queryString}` : url;
 
-    return fetchData(apiUrl, {
-        method: "GET",
-    });
+	let lastError: unknown;
+
+	// The first iteration is the original request, followed by two retries.
+	for (let attempt = 0; attempt <= GET_RETRY_COUNT; attempt += 1) {
+		try {
+			return await fetchData(apiUrl, {
+				method: 'GET',
+			});
+		} catch (error) {
+			lastError = error;
+
+			// Retry only temporary gateway/server failures.
+			const shouldRetry =
+				error instanceof ApiError &&
+				RETRYABLE_STATUS_CODES.has(error.status) &&
+				attempt < GET_RETRY_COUNT;
+
+			if (!shouldRetry) {
+				throw error;
+			}
+
+			// Increase the delay before every following attempt.
+			await wait(RETRY_DELAY_MS * (attempt + 1));
+		}
+	}
+
+	// This is only a TypeScript safeguard because the loop normally throws first.
+	throw lastError;
 };
 
 export const apiPost : ApiPost = (url, data) => {
@@ -53,6 +108,7 @@ export const apiPost : ApiPost = (url, data) => {
     return fetchData(url, requestOptions);
 };
 
+// Use in case of future updates on the backend api
 export const apiPut : ApiPut = (url, data) => {
     const requestOptions = {
         method: "PUT",
@@ -63,6 +119,7 @@ export const apiPut : ApiPut = (url, data) => {
     return fetchData(url, requestOptions);
 };
 
+// Use in case of future updates on the backend api
 export const apiDelete : ApiDelete = (url) => {
     const requestOptions = {
         method: "DELETE",
