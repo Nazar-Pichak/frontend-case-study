@@ -194,13 +194,63 @@ function App() {
 
 		setUnavailableSeatIds((currentIds) => {
 			const updatedIds = new Set(currentIds);
-			selectedSeats.forEach((seat) => {updatedIds.add(seat.seatId)});
+			selectedSeats.forEach((seat) => { updatedIds.add(seat.seatId) });
 			return updatedIds;
 		});
 
 		setSelectedSeats([]);
 		setIsCartOpen(false);
 		setIsCheckoutOpen(false);
+	};
+
+	const login = async (credentials: LoginRequest) => {
+		const response = await apiPost<LoginResponse>('/login', {
+			email: credentials.email,
+			password: credentials.password,
+		});
+
+		if (!response) {
+			throw new Error('Sign in failed.');
+		}
+
+		setLoggedInUser(response.user);
+		setAuthNotification('login');
+
+		return response.user;
+	};
+
+	const handleLoginCheckout = async (credentials: LoginRequest) => {
+		setIsSubmitting(true);
+		setCheckoutError(null);
+
+		try {
+			const user = await login(credentials);
+			await createOrder(user);
+		} catch (error) {
+			setCheckoutError(getErrorMessage(error));
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	const handleStandaloneLogin = async (credentials: LoginRequest) => {
+		setIsLoginSubmitting(true);
+		setLoginError(null);
+
+		try {
+			await login(credentials);
+			setIsLoginOpen(false);
+		} catch (error) {
+			setLoginError(getErrorMessage(error));
+		} finally {
+			setIsLoginSubmitting(false);
+		}
+	};
+
+	const handleLogout = () => {
+		setIsProfileOpen(false);
+		setLoggedInUser(null);
+		setAuthNotification('logout');
 	};
 
 	const handleGuestCheckout = async (user: UserDetails) => {
@@ -216,55 +266,6 @@ function App() {
 		}
 	};
 
-	const handleLoginCheckout = async (credentials: LoginRequest) => {
-		setIsSubmitting(true);
-		setCheckoutError(null);
-
-		try {
-			const loginResponse = await apiPost<LoginResponse>('/login', {
-				email: credentials.email,
-				password: credentials.password,
-			});
-
-			if (!loginResponse) {
-				throw new Error('Sign in failed.');
-			}
-
-			setLoggedInUser(loginResponse.user);
-			setAuthNotification('login');
-
-			await createOrder(loginResponse.user);
-		} catch (error) {
-			setCheckoutError(getErrorMessage(error));
-		} finally {
-			setIsSubmitting(false);
-		}
-	};
-
-	const handleStandaloneLogin = async (credentials: LoginRequest) => {
-		setIsLoginSubmitting(true);
-		setLoginError(null);
-
-		try {
-			const response = await apiPost<LoginResponse>('/login', {
-				email: credentials.email,
-				password: credentials.password,
-			});
-
-			if (!response) {
-				throw new Error('Sign in failed.');
-			}
-
-			setLoggedInUser(response.user);
-			setIsLoginOpen(false);
-			setAuthNotification('login');
-		} catch (error) {
-			setLoginError(getErrorMessage(error));
-		} finally {
-			setIsLoginSubmitting(false);
-		}
-	};
-
 	const handleCheckoutStart = () => {
 		setCheckoutError(null);
 		setCompletedOrder(null);
@@ -276,12 +277,6 @@ function App() {
 
 		setIsCartOpen(false);
 		setIsCheckoutOpen(true);
-	};
-
-	const handleLogout = () => {
-		setIsProfileOpen(false);
-		setLoggedInUser(null);
-		setAuthNotification('logout');
 	};
 
 	const eventDateFormatter = new Intl.DateTimeFormat(
