@@ -20,6 +20,7 @@ interface CartDialogProps {
     onClose: () => void;
     onRemoveSeat: (seat: Seats) => void;
     onCheckout: () => void;
+    errorMessage: string | null;
 }
 
 export function CartDialog({
@@ -30,6 +31,7 @@ export function CartDialog({
     currencyIso,
     totalPrice,
     isSubmitting,
+    errorMessage,
     onClose,
     onRemoveSeat,
     onCheckout,
@@ -77,9 +79,15 @@ export function CartDialog({
                     </div>
 
                     <Button type="button" variant="outline" size="sm" disabled={isSubmitting} onClick={onClose}>
-                       {t('close')}
+                        {t('close')}
                     </Button>
                 </header>
+
+                {errorMessage && (
+                    <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
+                        {errorMessage}
+                    </div>
+                )}
 
                 <CartSummary
                     selectedSeats={selectedSeats}

@@ -190,6 +190,7 @@ function App() {
 
 		setCompletedOrder(order);
 		setSelectedSeats([]);
+		setIsCartOpen(false);
 		setIsCheckoutOpen(false);
 	};
 
@@ -258,13 +259,13 @@ function App() {
 	const handleCheckoutStart = () => {
 		setCheckoutError(null);
 		setCompletedOrder(null);
-		setIsCartOpen(false);
 
 		if (loggedInUser) {
 			void handleGuestCheckout(loggedInUser);
 			return;
 		}
 
+		setIsCartOpen(false);
 		setIsCheckoutOpen(true);
 	};
 
@@ -492,6 +493,7 @@ function App() {
 				currencyIso={eventData?.currencyIso ?? 'CZK'}
 				totalPrice={totalPrice}
 				isSubmitting={isSubmitting}
+				errorMessage={checkoutError}
 				onClose={() => setIsCartOpen(false)}
 				onRemoveSeat={handleToggleSeat}
 				onCheckout={handleCheckoutStart}
