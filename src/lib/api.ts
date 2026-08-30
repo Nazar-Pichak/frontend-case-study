@@ -3,11 +3,9 @@
 
 import type { FetchData, ApiGet, ApiPost, ApiPut, ApiDelete } from './types.ts';
 
-// Use the NFCtron API directly during local development.
-// In production, route requests through the same-origin `/api` proxy
-// configured in vercel.json to avoid browser CORS restrictions.
-const NFCTRON_API_URL = 'https://nfctron-frontend-seating-case-study-2024.vercel.app';
-const API_BASE_URL = import.meta.env.PROD ? '/api' : NFCTRON_API_URL;
+// Route requests through a same-origin proxy in both development
+// and production to avoid browser CORS restrictions.
+const API_BASE_URL = '/api';
 
 const fetchData : FetchData = (url, requestOptions) => {
     const apiUrl = `${API_BASE_URL}${url}`;

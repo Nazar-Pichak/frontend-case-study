@@ -11,4 +11,16 @@ export default defineConfig({
             '@': path.resolve(__dirname, './src'),
         },
     },
+
+    server: {
+        proxy: {
+            '/api': {
+                target: 'https://nfctron-frontend-seating-case-study-2024.vercel.app',
+                changeOrigin: true,
+                secure: true,
+                rewrite: (requestPath) =>
+                    requestPath.replace(/^\/api/, ''),
+            },
+        },
+    },
 });
