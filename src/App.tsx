@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation.ts';
 
 import { apiGet, apiPost } from '@/lib/api.ts';
-import { formatCurrency } from '@/lib/utils.ts';
+import { formatCurrency, cn } from '@/lib/utils.ts';
 import type {
 	CreateOrderResponse,
 	EventData,
@@ -62,6 +62,7 @@ function App() {
 	const [isProfileOpen, setIsProfileOpen] = useState(false);
 	const [authNotification, setAuthNotification] = useState<AuthNotification>(null);
 	const [unavailableSeatIds, setUnavailableSeatIds] = useState<Set<string>>(() => new Set());
+	const [isScrolled, setIsScrolled] = useState(false);
 	// Store seats purchased by an authenticated user separately.
 	const [mySeatIds, setMySeatIds] = useState<Set<string>>(() => new Set());
 
@@ -137,6 +138,20 @@ function App() {
 			window.clearTimeout(timeoutId);
 		};
 	}, [authNotification]);
+
+	useEffect(() => {
+		const handleScroll = () => {
+			// Make the header translucent after leaving the top of the page.
+			setIsScrolled(window.scrollY > 10);
+		};
+
+		handleScroll();
+		window.addEventListener('scroll', handleScroll, { passive: true });
+
+		return () => {
+			window.removeEventListener('scroll', handleScroll);
+		};
+	}, []);
 
 	const handleToggleSeat = (seat: Seats) => {
 		setSelectedSeats((currentSeats) => {
@@ -315,8 +330,15 @@ function App() {
 
 	return (
 		<div className="flex grow flex-col gap-4">
-			<nav className="sticky left-0 right-0 top-0 flex justify-center eventron-background">
-				<div className="flex max-w-screen-lg grow items-center justify-between gap-3 p-4">
+			<header
+				className={cn(
+					'sticky top-0 z-40 w-full border-b border-transparent transition-all duration-300',
+					isScrolled
+						? 'border-zinc-200 bg-[#f7f5ff]/50 shadow-sm backdrop-blur-md'
+						: 'eventron-background'
+				)}
+			>
+				<nav className="mx-auto flex w-full max-w-screen-lg items-center justify-between gap-3 p-4" aria-label="Main navigation">
 					<div className="flex w-full max-w-[250px]">
 						<a href="/" className="inline-flex shrink-0 items-center" aria-label="EVENtron home">
 							<Logo className="h-6 w-auto" />
@@ -324,15 +346,30 @@ function App() {
 					</div>
 
 					<div className="flex w-full max-w-[250px] items-center justify-end gap-3">
-						<TranslateButton></TranslateButton>
-						<CartButton itemCount={selectedSeats.length} onClick={() => setIsCartOpen(true)} />
+						<TranslateButton />
+
+						<CartButton
+							itemCount={selectedSeats.length}
+							onClick={() => setIsCartOpen(true)}
+						/>
 
 						{loggedInUser ? (
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
-									<Button type="button" variant="ghost" size="icon" className="rounded-full" aria-label="Open user menu">
+									<Button
+										type="button"
+										variant="link"
+										size="icon"
+										className="rounded-full"
+										aria-label="Open user menu"
+									>
 										<Avatar>
-											<AvatarImage src={avatarSrc} alt={`${loggedInUser.firstName} ${loggedInUser.lastName}`} className="object-cover" />
+											{/* default image for user profile*/}
+											<AvatarImage
+												src={avatarSrc}
+												alt={`${loggedInUser.firstName} ${loggedInUser.lastName}`}
+												className="object-cover"
+											/>
 											<AvatarFallback>
 												{loggedInUser.firstName.charAt(0)}
 												{loggedInUser.lastName.charAt(0)}
@@ -341,7 +378,10 @@ function App() {
 									</Button>
 								</DropdownMenuTrigger>
 
-								<DropdownMenuContent className="w-[250px]" align="end">
+								<DropdownMenuContent
+									className="w-[250px]"
+									align="end"
+								>
 									<DropdownMenuLabel>
 										<span className="block">
 											{loggedInUser.firstName}{' '}
@@ -356,7 +396,9 @@ function App() {
 									<DropdownMenuSeparator />
 
 									<DropdownMenuGroup>
-										<DropdownMenuItem onSelect={() => setIsProfileOpen(true)}>
+										<DropdownMenuItem
+											onSelect={() => setIsProfileOpen(true)}
+										>
 											{t('userProfile')}
 										</DropdownMenuItem>
 
@@ -367,13 +409,20 @@ function App() {
 								</DropdownMenuContent>
 							</DropdownMenu>
 						) : (
-							<Button type="button" variant="default" onClick={() => { setLoginError(null), setIsLoginOpen(true) }}>
+							<Button
+								type="button"
+								variant="default"
+								onClick={() => {
+									setLoginError(null);
+									setIsLoginOpen(true);
+								}}
+							>
 								{t('login')}
 							</Button>
 						)}
 					</div>
-				</div>
-			</nav>
+				</nav>
+			</header>
 
 			<main className="flex grow flex-col justify-center">
 				<div className="m-auto flex w-full max-w-screen-lg grow flex-col-reverse items-center gap-3 p-4 lg:flex-row lg:items-start">
