@@ -449,14 +449,7 @@ function App() {
 					<aside className="flex w-full lg:max-w-96 flex-col gap-2 rounded-md bg-white p-3 shadow-sm">
 						{eventData ? (
 							<>
-								<div className="rounded-md bg-zinc-100 h-96 w-full sm:h-60"
-									style={{
-										backgroundImage: `url(${eventData.headerImageUrl})`,
-										backgroundPosition: 'center',
-										backgroundSize: 'cover',
-									}}
-								/>
-
+								<img src={eventData.headerImageUrl} className="rounded-md"/>
 								<h1 className="text-xl font-semibold text-zinc-900">
 									{eventData.namePub}
 								</h1>
