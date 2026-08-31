@@ -425,9 +425,9 @@ function App() {
 			</header>
 
 			<main className="flex grow flex-col justify-center">
-				<div className="m-auto flex w-full max-w-screen-lg grow flex-col-reverse items-center gap-3 p-4 lg:flex-row lg:items-start">
+				<div className="m-auto flex w-full max-w-screen-lg grow flex-col-reverse items-center gap-6 lg:gap-3 p-4 lg:flex-row lg:items-start">
 					<div
-						className="self-stretch overflow-x-auto overflow-y-auto rounded-md bg-white p-3 shadow-sm lg:grow"
+						className="self-stretch rounded-md bg-white p-3 shadow-lg lg:grow"
 						style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))', gridAutoRows: '40px' }}
 					>
 						{seatingData && eventData ? (
@@ -446,7 +446,7 @@ function App() {
 						)}
 					</div>
 
-					<aside className="flex w-full lg:max-w-96 flex-col gap-2 rounded-md bg-white p-3 shadow-sm">
+					<aside className="flex w-full lg:max-w-96 flex-col gap-2 rounded-md bg-white p-3 shadow-lg">
 						{eventData ? (
 							<>
 								<img src={eventData.headerImageUrl} className="rounded-md"/>
