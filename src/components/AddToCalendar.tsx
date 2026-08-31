@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button.tsx';
-import { createGoogleCalendarUrl, downloadCalendarEvent } from '@/lib/calendar.ts';
+import { CalendarIcon } from '@/components/ui/calendar-icon.tsx';
 import { useTranslation } from '@/hooks/useTranslation.ts';
 import type { EventData } from '@/lib/types.ts';
+import { google, outlook, office365, yahoo, ics } from 'calendar-link';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -9,13 +10,46 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx';
 
-interface AddToCalendarProps {event: EventData}
+interface AddToCalendarProps { event: EventData }
 
-export function AddToCalendar({event}: AddToCalendarProps) {
+export function AddToCalendar({ event }: AddToCalendarProps) {
     const { t } = useTranslation();
-    const handleGoogleCalendar = () => {
-        window.open(createGoogleCalendarUrl(event), '_blank', 'noopener,noreferrer');
+    const calendarEvent = {
+        uid: event.eventId,
+        title: event.namePub,
+        description: event.description,
+        start: event.dateFrom,
+        end: event.dateTo,
+        location: event.place,
     };
+    const googleUrl = google(calendarEvent);
+    const outlookUrl = outlook(calendarEvent);
+    const office365Url = office365(calendarEvent);
+    const yahooUrl = yahoo(calendarEvent);
+    const calendarFileUrl = ics(calendarEvent);
+
+    const handleCalendar = (url: string) => {
+
+        window.open(
+            url,
+            '_blank',
+            'noopener,noreferrer'
+        );
+    };
+
+    const handleDownloadCalendar = (url: string) => {
+        // Create a temporary link to start the browser download.
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = `${event.namePub
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')}.ics`;
+
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        downloadLink.remove();
+    };
+
 
     return (
         <DropdownMenu>
@@ -26,12 +60,26 @@ export function AddToCalendar({event}: AddToCalendarProps) {
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={handleGoogleCalendar}>
+                <DropdownMenuItem className="flex justify-between gap-5" onSelect={() => handleCalendar(googleUrl)}>
                     {t('googleCalendar')}
+                    <CalendarIcon provider="google" />
                 </DropdownMenuItem>
-                {/* downloadable file for opening in other calendars */}
-                <DropdownMenuItem onSelect={() => downloadCalendarEvent(event)}>
+                <DropdownMenuItem className="flex justify-between gap-5" onSelect={() => handleCalendar(outlookUrl)}>
+                    {t('outlookCalendar')}
+                    <CalendarIcon provider="outlook" />
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex justify-between gap-5" onSelect={() => handleCalendar(office365Url)}>
+                    {t('office365Calendar')}
+                    <CalendarIcon provider="microsoft" />
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex justify-between gap-5" onSelect={() => handleCalendar(yahooUrl)}>
+                    {t('yahooCalendar')}
+                    <CalendarIcon provider="yahoo" />
+                </DropdownMenuItem>
+                {/* downloadable file for opening in other calendars (Apple Calendar, Outlook desktop, Thunderbird ...) */}
+                <DropdownMenuItem className="flex justify-between gap-5" onSelect={() => handleDownloadCalendar(calendarFileUrl)}>
                     {t('downloadCalendarFile')}
+                    <CalendarIcon provider="download" />
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

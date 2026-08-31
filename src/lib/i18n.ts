@@ -36,7 +36,10 @@ const englishTranslations = {
 
     addToCalendar: 'Add to calendar',
     googleCalendar: 'Google Calendar',
-    downloadCalendarFile: 'Download calendar file',
+    outlookCalendar: 'Outlook Calendar',
+    office365Calendar: 'Microsoft 365',
+    yahooCalendar: 'Yahoo Calendar',
+    downloadCalendarFile: 'Download .ics',
 
     firstName: 'First name',
     lastName: 'Last name',
@@ -121,7 +124,10 @@ const czechTranslations: Record<TranslationKey, string> = {
 
     addToCalendar: 'Přidat do kalendáře',
     googleCalendar: 'Kalendář Google',
-    downloadCalendarFile: 'Stáhnout soubor kalendáře',
+    outlookCalendar: 'Kalendář Outlook',
+    office365Calendar: 'Microsoft 365',
+    yahooCalendar: 'Kalendář Yahoo',
+    downloadCalendarFile: 'Stáhnout .ics',
 
     firstName: 'Jméno',
     lastName: 'Příjmení',
