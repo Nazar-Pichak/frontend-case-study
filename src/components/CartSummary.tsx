@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button.tsx';
 import { formatCurrency } from '@/lib/utils.ts';
 import type { Seats, SeatRows, TicketTypes } from '@/lib/types.ts';
 import { useTranslation } from '@/hooks/useTranslation.ts';
+import { RemoveIcon } from '@/components/ui/remove-icon.tsx';
 
 interface CartSummaryProps {
     selectedSeats: Seats[];
@@ -47,8 +48,8 @@ export function CartSummary({ selectedSeats, seatRows, ticketTypes, currencyIso,
                                 {ticketType ? formatCurrency(ticketType.price, currencyIso, language): '—'}
                             </span>
 
-                            <Button type="button" variant="destructive" size="sm" onClick={() => onRemoveSeat(seat)} aria-label={`Remove seat ${seat.place} from cart`}>
-                                {t('removeFromCart')}
+                            <Button type="button" variant="link" size="sm" onClick={() => onRemoveSeat(seat)} aria-label={`Remove seat ${seat.place} from cart`}>
+                                <RemoveIcon/>
                             </Button>
                         </div>
                     </li>
