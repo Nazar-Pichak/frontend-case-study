@@ -21,7 +21,7 @@ import type { LoginRequest, UserDetails } from '@/lib/types.ts';
 
 import './App.css';
 
-type AuthNotification = 'login' | 'logout' | null;
+const DEFAULT_AVATAR_SRC ='/ian-dooley-d1UPkiFd04A-unsplash.jpg';
 
 function App() {
 
@@ -45,8 +45,6 @@ function App() {
 	const [isCartOpen, setIsCartOpen] = useState(false);
 	const [isProfileOpen, setIsProfileOpen] = useState(false);
 	const isScrolled = useScrollState();
-
-	const avatarSrc = "/ian-dooley-d1UPkiFd04A-unsplash.jpg";
 
 	const handleStandaloneLogin = async (credentials: LoginRequest) => {
 		const user = await submitLogin(credentials);
@@ -103,7 +101,7 @@ function App() {
 				isScrolled={isScrolled}
 				selectedSeatCount={selectedSeats.length}
 				loggedInUser={loggedInUser}
-				avatarSrc={avatarSrc}
+				avatarSrc={DEFAULT_AVATAR_SRC}
 				onOpenCart={() => setIsCartOpen(true)}
 				onOpenLogin={() => {
 					clearLoginError();
@@ -127,11 +125,11 @@ function App() {
 					/>
 					<EventSection event={eventData} errorKey={eventErrorKey} />
 				</div>
-			</main >
+			</main>
 
 			<Footer />
-
-			<div className="w-full h-96 absolute -z-10 eventron-background"></div>
+			{/* Background decoration */}
+			<div className="w-full h-96 absolute -z-10 eventron-background" aria-hidden="true"></div>
 
 			{/* Notifications */}
 			<div className="fixed right-4 top-4 z-50 flex w-[calc(100%-2rem)] max-w-sm flex-col gap-3">
@@ -179,12 +177,12 @@ function App() {
 			<ProfileDialog
 				open={isProfileOpen}
 				user={loggedInUser}
-				avatarSrc={avatarSrc}
+				avatarSrc={DEFAULT_AVATAR_SRC}
 				onClose={() => setIsProfileOpen(false)}
 			/>
 
 			<ScrollToTopButton />
-		</div >
+		</div>
 	);
 }
 
