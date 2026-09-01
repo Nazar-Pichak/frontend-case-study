@@ -401,10 +401,6 @@ function App() {
 											{loggedInUser.firstName}{' '}
 											{loggedInUser.lastName}
 										</span>
-
-										<span className="block truncate text-xs font-normal text-zinc-500">
-											{loggedInUser.email}
-										</span>
 									</DropdownMenuLabel>
 
 									<DropdownMenuSeparator />

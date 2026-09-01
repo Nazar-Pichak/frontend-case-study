@@ -67,9 +67,6 @@ export function ProfileDialog({open, user, avatarSrc, onClose}: ProfileDialogPro
                         {user.firstName} {user.lastName}
                     </h2>
 
-                    <p className="mt-1 text-sm text-zinc-500">
-                        {user.email}
-                    </p>
                 </div>
 
                 <dl className="mt-6 divide-y divide-zinc-200 rounded-md border border-zinc-200">
