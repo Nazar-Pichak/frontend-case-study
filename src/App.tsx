@@ -20,8 +20,8 @@ import { LoginDialog } from '@/components/auth/LoginDialog.tsx';
 import { ProfileDialog } from '@/components/auth/ProfileDialog.tsx';
 
 // refactor
-import { Header } from '@/layout/Header.tsx';
-import { Footer } from '@/layout/Footer.tsx';
+import { Header } from '@/components/layout/Header.tsx';
+import { Footer } from '@/components/layout/Footer.tsx';
 import { AuthNotification } from '@/components/notifications/AuthNotification.tsx';
 import { OrderNotification } from '@/components/notifications/OrderNotification.tsx';
 import { EventSection } from '@/components/event/EventSection.tsx';
