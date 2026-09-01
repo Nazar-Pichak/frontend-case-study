@@ -15,7 +15,6 @@ import type {
 	UserDetails,
 } from '@/lib/types.ts';
 
-import { AddToCalendar } from '@/components/AddToCalendar.tsx';
 import { CartDialog } from '@/components/CartDialog.tsx';
 import { CheckoutDialog } from '@/components/CheckoutDialog';
 import { LoginDialog } from '@/components/LoginDialog.tsx';
@@ -25,11 +24,11 @@ import { SeatingStage } from '@/components/SeatingStage.tsx';
 import { SeatingLegend } from '@/components/SeatingLegend.tsx';
 
 // refactor
-import { EventDetails } from '@/components/event/EventDetails.tsx';
 import { Header } from '@/layout/Header.tsx';
 import { Footer } from '@/layout/Footer.tsx';
 import { AuthNotification } from '@/components/notifications/AuthNotification.tsx';
 import { OrderNotification } from '@/components/notifications/OrderNotification.tsx';
+import { EventSection } from '@/components/event/EventSection.tsx';
 
 import { Spinner } from '@/components/ui/spinner.tsx';
 import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button.tsx';
@@ -370,16 +369,8 @@ function App() {
 						<SeatingLegend showMySeats={loggedInUser !== null} />
 					</div>
 
-					<aside className="flex flex-col self-stretch rounded-md bg-white p-3 gap-2 shadow-lg lg:grow lg:max-w-96">
-						{eventErrorKey ? (
-							<ErrorMessage message={t(eventErrorKey)} />
-						) : eventData ? (
-							<EventDetails eventData={eventData} />
-						) : (
-							<Spinner label={t('loadingEventData')} />
-						)}
-						<AddToCalendar event={eventData || undefined} />
-					</aside>
+					<EventSection event={eventData} errorKey={eventErrorKey}/>
+
 				</div>
 			</main >
 
@@ -389,8 +380,8 @@ function App() {
 
 			{/* Notifications */}
 			<div className="fixed right-4 top-4 z-50 flex w-[calc(100%-2rem)] max-w-sm flex-col gap-3">
-				<AuthNotification notification={authNotification}/>
-				<OrderNotification order={completedOrder} currencyIso={eventData?.currencyIso}/>
+				<AuthNotification notification={authNotification} />
+				<OrderNotification order={completedOrder} currencyIso={eventData?.currencyIso} />
 			</div>
 
 			<CartDialog
