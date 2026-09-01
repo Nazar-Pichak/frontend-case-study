@@ -1,9 +1,9 @@
 import type { EventData } from '@/lib/types.ts';
 import type { TranslationKey } from '@/lib/i18n.ts';
+import { ErrorMessage } from '@/components/ui/error-message.tsx';
 import { Spinner } from '@/components/ui/spinner.tsx';
 import { useTranslation } from '@/hooks/useTranslation.ts';
-import { AddToCalendar } from '@/components/AddToCalendar.tsx';
-import { ErrorMessage } from '@/components/ui/error-message.tsx';
+import { AddToCalendar } from '@/components/event/AddToCalendar.tsx';
 import { EventDetails } from '@/components/event/EventDetails.tsx';
 
 interface EventSectionProps {
