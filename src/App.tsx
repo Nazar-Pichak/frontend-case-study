@@ -1,138 +1,52 @@
-import { useEffect, useState } from 'react';
-import { useTranslation } from '@/hooks/useTranslation.ts';
+import { useState } from 'react';
 import { useCart } from '@/hooks/useCart.ts';
 import { useScrollState } from '@/hooks/useScrollState.ts';
 import { useEventData } from '@/hooks/useEventData.ts';
 import { useAuth } from '@/hooks/useAuth.ts';
+import { useCheckout } from '@/hooks/useCheckout.ts';
 
-import { apiPost } from '@/lib/api.ts';
-import { getApiErrorKey } from '@/lib/api-errors.ts';
-import type { CreateOrderResponse, LoginRequest, UserDetails } from '@/lib/types.ts';
-
+import { Header } from '@/components/layout/Header.tsx';
+import { Footer } from '@/components/layout/Footer.tsx';
 import { CartDialog } from '@/components/cart/CartDialog.tsx';
 import { CheckoutDialog } from '@/components/checkout/CheckoutDialog.tsx';
 import { LoginDialog } from '@/components/auth/LoginDialog.tsx';
 import { ProfileDialog } from '@/components/auth/ProfileDialog.tsx';
-
-// refactor
-import { Header } from '@/components/layout/Header.tsx';
-import { Footer } from '@/components/layout/Footer.tsx';
 import { AuthNotification } from '@/components/notifications/AuthNotification.tsx';
 import { OrderNotification } from '@/components/notifications/OrderNotification.tsx';
 import { EventSection } from '@/components/event/EventSection.tsx';
 import { SeatingSection } from '@/components/seating/SeatingSection.tsx';
-
 import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button.tsx';
+
+import type { LoginRequest, UserDetails } from '@/lib/types.ts';
 
 import './App.css';
 
 type AuthNotification = 'login' | 'logout' | null;
 
 function App() {
-	const { t } = useTranslation();
+
 	const { eventData, seatingData, eventErrorKey, seatingErrorKey } = useEventData();
 	const { selectedSeats, totalPrice, toggleSeat: handleToggleSeat, clearCart } = useCart(seatingData?.ticketTypes ?? []);
 	const { loggedInUser, authNotification, loginError, isLoginSubmitting, authenticate, submitLogin, logout, clearLoginError } = useAuth();
+	const {
+		completedOrder,
+		checkoutError,
+		isSubmitting,
+		unavailableSeatIds,
+		mySeatIds,
+		submitCheckout,
+		submitLoginCheckout,
+		resetCheckoutFeedback,
+		clearCheckoutError,
+	} = useCheckout({ eventData, selectedSeats, clearCart, authenticate });
+
 	const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [checkoutError, setCheckoutError] = useState<string | null>(null);
-	const [completedOrder, setCompletedOrder] = useState<CreateOrderResponse | null>(null);
 	const [isLoginOpen, setIsLoginOpen] = useState(false);
 	const [isCartOpen, setIsCartOpen] = useState(false);
 	const [isProfileOpen, setIsProfileOpen] = useState(false);
-	const [unavailableSeatIds, setUnavailableSeatIds] = useState<Set<string>>(() => new Set());
-	const [mySeatIds, setMySeatIds] = useState<Set<string>>(() => new Set());
 	const isScrolled = useScrollState();
 
 	const avatarSrc = "/ian-dooley-d1UPkiFd04A-unsplash.jpg";
-
-	useEffect(() => {
-		if (!completedOrder) {
-			return;
-		}
-
-		const timeoutId = window.setTimeout(() => {
-			setCompletedOrder(null);
-		}, 5000);
-
-		return () => {
-			window.clearTimeout(timeoutId);
-		};
-	}, [completedOrder]);
-
-	const createOrder = async (user: UserDetails, isAuthenticatedPurchase = false) => {
-		if (!eventData) {
-			throw new Error('Event data is not available.');
-		}
-
-		if (selectedSeats.length === 0) {
-			throw new Error('Select at least one seat.');
-		}
-
-		const order = await apiPost<CreateOrderResponse>('/order', {
-			eventId: eventData.eventId,
-			tickets: selectedSeats.map((seat) => ({
-				ticketTypeId: seat.ticketTypeId,
-				seatId: seat.seatId,
-			})),
-			user,
-		});
-
-
-		if (!order) {
-			throw new Error('The order could not be created.');
-		}
-
-		setCompletedOrder(order);
-
-		// Preserve the IDs before clearing the selected seats.
-		const purchasedSeatIds = selectedSeats.map((seat) => seat.seatId);
-
-		// Every purchased seat becomes unavailable.
-		setUnavailableSeatIds((currentIds) => {
-			const updatedIds = new Set(currentIds);
-
-			purchasedSeatIds.forEach((seatId) => {
-				updatedIds.add(seatId);
-			});
-
-			return updatedIds;
-		});
-
-		if (isAuthenticatedPurchase) {
-			// Mark authenticated purchases as belonging to the current user.
-			setMySeatIds((currentIds) => {
-				const updatedIds = new Set(currentIds);
-
-				purchasedSeatIds.forEach((seatId) => {
-					updatedIds.add(seatId);
-				});
-
-				return updatedIds;
-			});
-		}
-
-		clearCart();
-		setIsCartOpen(false);
-		setIsCheckoutOpen(false);
-	};
-
-
-	const handleLoginCheckout = async (credentials: LoginRequest) => {
-		setIsSubmitting(true);
-		setCheckoutError(null);
-
-		try {
-			const user = await authenticate(credentials);
-			// The user authenticated before creating this order.
-			await createOrder(user, true);
-		} catch (error) {
-			// Convert the technical API error into a translated user message.
-			setCheckoutError(t(getApiErrorKey(error, 'login')));
-		} finally {
-			setIsSubmitting(false);
-		}
-	};
 
 	const handleStandaloneLogin = async (credentials: LoginRequest) => {
 		const user = await submitLogin(credentials);
@@ -149,27 +63,31 @@ function App() {
 		logout();
 	};
 
-	const handleGuestCheckout = async (user: UserDetails, isAuthenticatedPurchase = false) => {
-		setIsSubmitting(true);
-		setCheckoutError(null);
+	const handleLoginCheckout = async (credentials: LoginRequest) => {
+		const wasSuccessful = await submitLoginCheckout(credentials);
 
-		try {
-			// Forward the authentication state to the order handler.
-			await createOrder(user, isAuthenticatedPurchase);
-		} catch (error) {
-			// Display a short translated message for order request failures.
-			setCheckoutError(t(getApiErrorKey(error)));
-		} finally {
-			setIsSubmitting(false);
+		if (wasSuccessful) {
+			setIsCartOpen(false);
+			setIsCheckoutOpen(false);
+		}
+	};
+
+	const handleGuestCheckout = async (user: UserDetails, isAuthenticatedPurchase = false) => {
+		const wasSuccessful = await submitCheckout(user, isAuthenticatedPurchase);
+
+		// Dialog visibility remains in App because it is UI state.
+		if (wasSuccessful) {
+			setIsCartOpen(false);
+			setIsCheckoutOpen(false);
 		}
 	};
 
 	const handleCheckoutStart = () => {
-		setCheckoutError(null);
-		setCompletedOrder(null);
+		resetCheckoutFeedback();
 
 		if (loggedInUser) {
-			// Mark seats from an authenticated checkout as belonging to this user.
+			// Authenticated purchases are displayed as belonging
+			// to the currently signed-in user.
 			void handleGuestCheckout(loggedInUser, true);
 			return;
 		}
@@ -240,7 +158,7 @@ function App() {
 				isSubmitting={isSubmitting}
 				errorMessage={checkoutError}
 				onClose={() => {
-					setCheckoutError(null);
+					clearCheckoutError();
 					setIsCheckoutOpen(false);
 				}}
 				onGuestSubmit={handleGuestCheckout}
