@@ -10,26 +10,33 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx';
 
-interface AddToCalendarProps { event: EventData }
+interface AddToCalendarProps {
+    event?: EventData;
+    disabled?: boolean;
+}
 
-export function AddToCalendar({ event }: AddToCalendarProps) {
+export function AddToCalendar({ event, disabled = false }: AddToCalendarProps) {
     const { t } = useTranslation();
-    const calendarEvent = {
+
+    const calendarEvent = event ? {
         uid: event.eventId,
         title: event.namePub,
         description: event.description,
         start: event.dateFrom,
         end: event.dateTo,
         location: event.place,
-    };
-    const googleUrl = google(calendarEvent);
-    const outlookUrl = outlook(calendarEvent);
-    const office365Url = office365(calendarEvent);
-    const yahooUrl = yahoo(calendarEvent);
-    const calendarFileUrl = ics(calendarEvent);
+    } : null;
 
-    const handleCalendar = (url: string) => {
+    const googleUrl = calendarEvent ? google(calendarEvent) : null;
+    const outlookUrl = calendarEvent ? outlook(calendarEvent) : null;
+    const office365Url = calendarEvent ? office365(calendarEvent) : null;
+    const yahooUrl = calendarEvent ? yahoo(calendarEvent) : null;
+    const calendarFileUrl = calendarEvent ? ics(calendarEvent) : null;
 
+    const handleCalendar = (url: string | null) => {
+        if (!url) {
+            return;
+        }
         window.open(
             url,
             '_blank',
@@ -37,7 +44,10 @@ export function AddToCalendar({ event }: AddToCalendarProps) {
         );
     };
 
-    const handleDownloadCalendar = (url: string) => {
+    const handleDownloadCalendar = (url: string | null) => {
+        if (!url || !event) {
+            return;
+        }
         // Create a temporary link to start the browser download.
         const downloadLink = document.createElement('a');
         downloadLink.href = url;
@@ -54,7 +64,7 @@ export function AddToCalendar({ event }: AddToCalendarProps) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button type="button" variant="default" className="ml-auto" >
+                <Button type="button" variant="default" className="ml-auto mt-auto" disabled={disabled || !event}>
                     {t('addToCalendar')}
                 </Button>
             </DropdownMenuTrigger>

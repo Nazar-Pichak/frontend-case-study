@@ -22,6 +22,8 @@ import { CheckoutDialog } from '@/components/CheckoutDialog';
 import { LoginDialog } from '@/components/LoginDialog.tsx';
 import { SeatingMap } from '@/components/SeatingMap.tsx';
 import { ProfileDialog } from '@/components/ProfileDialog.tsx';
+import { SeatingStage } from '@/components/SeatingStage.tsx';
+import { SeatingLegend } from '@/components/SeatingLegend.tsx';
 
 import { Button } from '@/components/ui/button.tsx';
 import { CartButton } from '@/components/ui/cart-button.tsx';
@@ -31,6 +33,7 @@ import { Logo } from '@/components/ui/logo.tsx';
 import { ProfileIcon } from '@/components/ui/profile-icon.tsx';
 import { LogoutIcon } from '@/components/ui/logout-icon.tsx';
 import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button.tsx';
+import { ErrorMessage } from '@/components/ui/error-message.tsx';
 import {
 	Avatar,
 	AvatarFallback,
@@ -436,42 +439,40 @@ function App() {
 
 			<main className="flex grow flex-col justify-center">
 				<div className="m-auto flex w-full max-w-screen-lg grow flex-col-reverse items-center gap-6 lg:gap-3 p-4 lg:flex-row lg:items-start">
-					<div
-						className="self-stretch rounded-md bg-white p-3 shadow-lg lg:grow"
-						style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))', gridAutoRows: '40px' }}
-					>
-						{seatingErrorKey || eventErrorKey ? (
-							<div className="flex min-h-48 items-center justify-center p-4" role="alert">
-								<p className="max-w-sm text-center text-sm text-destructive">
-									{t(seatingErrorKey ?? eventErrorKey!)}
-								</p>
-							</div>
-						) : seatingData && eventData ? (
-							<SeatingMap
-								seatRows={seatingData.seatRows}
-								ticketTypes={seatingData.ticketTypes}
-								currencyIso={eventData.currencyIso}
-								selectedSeats={selectedSeats}
-								unavailableSeatIds={unavailableSeatIds}
-								mySeatIds={mySeatIds}
-								showMySeats={loggedInUser !== null}
-								onToggleSeat={handleToggleSeat}
-							/>
-						) : (
-							<Spinner label={t('loadingSeatingData')} />
-						)}
+					<div className="flex flex-col self-stretch rounded-md bg-white p-3 shadow-lg lg:grow"
+						style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))', gridAutoRows: '40px' }}>
+						{/* Stage */}
+						<SeatingStage />
+
+						{/* Only the seating rows change between loading, error and success */}
+						<div className="flex w-full min-w-0 grow justify-center">
+							{seatingErrorKey || eventErrorKey ? (
+								<ErrorMessage message={t(seatingErrorKey ?? eventErrorKey!)}/>
+							) : seatingData && eventData ? (
+								<SeatingMap
+									seatRows={seatingData.seatRows}
+									ticketTypes={seatingData.ticketTypes}
+									currencyIso={eventData.currencyIso}
+									selectedSeats={selectedSeats}
+									unavailableSeatIds={unavailableSeatIds}
+									mySeatIds={mySeatIds}
+									showMySeats={loggedInUser !== null}
+									onToggleSeat={handleToggleSeat}
+								/>
+							) : (
+								<Spinner label={t('loadingSeatingData')} />
+							)}
+						</div>
+						{/* Legend */}
+						<SeatingLegend showMySeats={loggedInUser !== null} />
 					</div>
 
-					<aside className="flex w-full lg:max-w-96 flex-col gap-2 rounded-md bg-white p-3 shadow-lg">
+					<aside className="flex flex-col self-stretch rounded-md bg-white p-3 gap-2 shadow-lg lg:grow lg:max-w-96">
 						{eventErrorKey ? (
-							<div className="flex min-h-48 items-center justify-center p-4" role="alert">
-								<p className="max-w-sm text-center text-sm text-destructive">
-									{t(eventErrorKey)}
-								</p>
-							</div>
+							<ErrorMessage message={t(eventErrorKey)} />
 						) : eventData ? (
-							<>
-								<img src={eventData.headerImageUrl} className="rounded-md" alt={eventData.namePub}/>
+							<div className="flex flex-col items-start gap-2 h-full">
+								<img src={eventData.headerImageUrl} className="rounded-md" alt={eventData.namePub} />
 								<h1 className="text-xl font-semibold text-zinc-900">
 									{eventData.namePub}
 								</h1>
@@ -505,14 +506,14 @@ function App() {
 									</em>
 								</small>
 
-								<AddToCalendar event={eventData} />
-							</>
+							</div>
 						) : (
 							<Spinner label={t('loadingEventData')} />
 						)}
+						<AddToCalendar event={eventData || undefined} />
 					</aside>
 				</div>
-			</main>
+			</main >
 
 			<footer className="eventron-background min-h-40">
 				<div className="mx-auto flex w-full max-w-screen-lg flex-col gap-6 p-6">
@@ -621,7 +622,7 @@ function App() {
 			/>
 
 			<ScrollToTopButton />
-		</div>
+		</div >
 	);
 }
 
