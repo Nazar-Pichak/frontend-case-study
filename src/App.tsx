@@ -18,10 +18,7 @@ import type {
 import { CartDialog } from '@/components/CartDialog.tsx';
 import { CheckoutDialog } from '@/components/CheckoutDialog';
 import { LoginDialog } from '@/components/LoginDialog.tsx';
-import { SeatingMap } from '@/components/SeatingMap.tsx';
 import { ProfileDialog } from '@/components/ProfileDialog.tsx';
-import { SeatingStage } from '@/components/SeatingStage.tsx';
-import { SeatingLegend } from '@/components/SeatingLegend.tsx';
 
 // refactor
 import { Header } from '@/layout/Header.tsx';
@@ -29,10 +26,9 @@ import { Footer } from '@/layout/Footer.tsx';
 import { AuthNotification } from '@/components/notifications/AuthNotification.tsx';
 import { OrderNotification } from '@/components/notifications/OrderNotification.tsx';
 import { EventSection } from '@/components/event/EventSection.tsx';
+import { SeatingSection } from '@/components/seating/SeatingSection.tsx';
 
-import { Spinner } from '@/components/ui/spinner.tsx';
 import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button.tsx';
-import { ErrorMessage } from '@/components/ui/error-message.tsx';
 
 import './App.css';
 
@@ -341,36 +337,17 @@ function App() {
 
 			<main className="flex grow flex-col justify-center">
 				<div className="m-auto flex w-full max-w-screen-lg grow flex-col-reverse items-center gap-6 lg:gap-3 p-4 lg:flex-row lg:items-start">
-					<div className="flex flex-col self-stretch rounded-md bg-white p-3 shadow-lg lg:grow"
-						style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))', gridAutoRows: '40px' }}>
-						{/* Stage */}
-						<SeatingStage />
-
-						{/* Only the seating rows change between loading, error and success */}
-						<div className="flex w-full min-w-0 grow justify-center">
-							{seatingErrorKey || eventErrorKey ? (
-								<ErrorMessage message={t(seatingErrorKey ?? eventErrorKey!)} />
-							) : seatingData && eventData ? (
-								<SeatingMap
-									seatRows={seatingData.seatRows}
-									ticketTypes={seatingData.ticketTypes}
-									currencyIso={eventData.currencyIso}
-									selectedSeats={selectedSeats}
-									unavailableSeatIds={unavailableSeatIds}
-									mySeatIds={mySeatIds}
-									showMySeats={loggedInUser !== null}
-									onToggleSeat={handleToggleSeat}
-								/>
-							) : (
-								<Spinner label={t('loadingSeatingData')} />
-							)}
-						</div>
-						{/* Legend */}
-						<SeatingLegend showMySeats={loggedInUser !== null} />
-					</div>
-
-					<EventSection event={eventData} errorKey={eventErrorKey}/>
-
+					<SeatingSection
+						seatingData={seatingData}
+						currencyIso={eventData?.currencyIso ?? null}
+						errorKey={seatingErrorKey ?? eventErrorKey}
+						selectedSeats={selectedSeats}
+						unavailableSeatIds={unavailableSeatIds}
+						mySeatIds={mySeatIds}
+						showMySeats={loggedInUser !== null}
+						onToggleSeat={handleToggleSeat}
+					/>
+					<EventSection event={eventData} errorKey={eventErrorKey} />
 				</div>
 			</main >
 
