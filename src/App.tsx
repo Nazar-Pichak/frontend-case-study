@@ -3,7 +3,6 @@ import { useTranslation } from '@/hooks/useTranslation.ts';
 
 import { apiGet, apiPost } from '@/lib/api.ts';
 import { getApiErrorKey } from '@/lib/api-errors.ts';
-
 import type { TranslationKey } from '@/lib/i18n.ts';
 import type {
 	CreateOrderResponse,
@@ -17,8 +16,8 @@ import type {
 
 import { CartDialog } from '@/components/CartDialog.tsx';
 import { CheckoutDialog } from '@/components/CheckoutDialog';
-import { LoginDialog } from '@/components/LoginDialog.tsx';
-import { ProfileDialog } from '@/components/ProfileDialog.tsx';
+import { LoginDialog } from '@/components/auth/LoginDialog.tsx';
+import { ProfileDialog } from '@/components/auth/ProfileDialog.tsx';
 
 // refactor
 import { Header } from '@/layout/Header.tsx';
