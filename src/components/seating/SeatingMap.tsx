@@ -1,4 +1,4 @@
-import { Seat } from '@/components/Seat.tsx';
+import { Seat } from '@/components/seating/Seat.tsx';
 import type { SeatRows, Seats, TicketTypes } from '@/lib/types.ts';
 import { useTranslation } from '@/hooks/useTranslation.ts';
 

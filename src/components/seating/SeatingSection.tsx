@@ -1,6 +1,6 @@
-import { SeatingLegend } from '@/components/SeatingLegend.tsx';
-import { SeatingMap } from '@/components/SeatingMap.tsx';
-import { SeatingStage } from '@/components/SeatingStage.tsx';
+import { SeatingLegend } from '@/components/seating/SeatingLegend.tsx';
+import { SeatingMap } from '@/components/seating/SeatingMap.tsx';
+import { SeatingStage } from '@/components/seating/SeatingStage.tsx';
 import { ErrorMessage } from '@/components/ui/error-message.tsx';
 import { Spinner } from '@/components/ui/spinner.tsx';
 import { useTranslation } from '@/hooks/useTranslation.ts';
