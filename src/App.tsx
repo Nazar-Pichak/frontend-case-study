@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation.ts';
 import { useCart } from '@/hooks/useCart.ts';
+import { useScrollState } from '@/hooks/useScrollState.ts';
 
 import { apiGet, apiPost } from '@/lib/api.ts';
 import { getApiErrorKey } from '@/lib/api-errors.ts';
@@ -38,7 +39,6 @@ function App() {
 	const [eventData, setEventData] = useState<EventData | null>(null);
 	const [seatingData, setSeatingData] = useState<SeatingData | null>(null);
 	const { selectedSeats, totalPrice, toggleSeat: handleToggleSeat, clearCart} = useCart(seatingData?.ticketTypes ?? []);
-
 	const [loggedInUser, setLoggedInUser] = useState<UserDetails | null>(null);
 	const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,11 +51,10 @@ function App() {
 	const [isProfileOpen, setIsProfileOpen] = useState(false);
 	const [authNotification, setAuthNotification] = useState<AuthNotification>(null);
 	const [unavailableSeatIds, setUnavailableSeatIds] = useState<Set<string>>(() => new Set());
-	const [isScrolled, setIsScrolled] = useState(false);
-	// Store seats purchased by an authenticated user separately.
 	const [mySeatIds, setMySeatIds] = useState<Set<string>>(() => new Set());
 	const [eventErrorKey, setEventErrorKey] = useState<TranslationKey | null>(null);
 	const [seatingErrorKey, setSeatingErrorKey] = useState<TranslationKey | null>(null);
+	const isScrolled = useScrollState();
 
 	const avatarSrc = "/ian-dooley-d1UPkiFd04A-unsplash.jpg"
 	const eventId = eventData?.eventId;
@@ -142,21 +141,6 @@ function App() {
 			window.clearTimeout(timeoutId);
 		};
 	}, [authNotification]);
-
-	useEffect(() => {
-		const handleScroll = () => {
-			// Make the header translucent after leaving the top of the page.
-			setIsScrolled(window.scrollY > 10);
-		};
-
-		handleScroll();
-		window.addEventListener('scroll', handleScroll, { passive: true });
-
-		return () => {
-			window.removeEventListener('scroll', handleScroll);
-		};
-	}, []);
-
 
 	const createOrder = async (user: UserDetails, isAuthenticatedPurchase = false) => {
 		if (!eventData) {
