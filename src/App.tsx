@@ -440,10 +440,10 @@ function App() {
 						className="self-stretch rounded-md bg-white p-3 shadow-lg lg:grow"
 						style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))', gridAutoRows: '40px' }}
 					>
-						{seatingErrorKey ? (
+						{seatingErrorKey || eventErrorKey ? (
 							<div className="flex min-h-48 items-center justify-center p-4" role="alert">
 								<p className="max-w-sm text-center text-sm text-destructive">
-									{t(seatingErrorKey)}
+									{t(seatingErrorKey ?? eventErrorKey!)}
 								</p>
 							</div>
 						) : seatingData && eventData ? (
