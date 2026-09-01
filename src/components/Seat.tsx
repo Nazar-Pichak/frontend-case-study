@@ -52,7 +52,7 @@ export const Seat = forwardRef<HTMLButtonElement, SeatProps>(
 					</button>
 				</PopoverTrigger>
 
-				<PopoverContent className="w-72">
+				<PopoverContent className="w-60">
 					<div>
 						<div className="flex items-center justify-between gap-4">
 							<span className="text-xs text-zinc-500">{t('ticketType')}</span>
