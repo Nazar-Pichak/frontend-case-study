@@ -25,6 +25,8 @@ import { CartButton } from '@/components/ui/cart-button.tsx';
 import { TranslateButton } from '@/components/ui/translate-button.tsx';
 import { Spinner } from '@/components/ui/spinner.tsx';
 import { Logo } from '@/components/ui/logo.tsx';
+import { ProfileIcon } from '@/components/ui/profile-icon.tsx';
+import { LogoutIcon } from '@/components/ui/logout-icon.tsx';
 import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button.tsx';
 import {
 	Avatar,
@@ -378,10 +380,7 @@ function App() {
 									</Button>
 								</DropdownMenuTrigger>
 
-								<DropdownMenuContent
-									className="w-[250px]"
-									align="end"
-								>
+								<DropdownMenuContent className="w-[200px]" align="end">
 									<DropdownMenuLabel>
 										<span className="block">
 											{loggedInUser.firstName}{' '}
@@ -396,14 +395,14 @@ function App() {
 									<DropdownMenuSeparator />
 
 									<DropdownMenuGroup>
-										<DropdownMenuItem
-											onSelect={() => setIsProfileOpen(true)}
-										>
+										<DropdownMenuItem className="flex justify-between gap-5" onSelect={() => setIsProfileOpen(true)}>
 											{t('userProfile')}
+											<ProfileIcon />
 										</DropdownMenuItem>
 
-										<DropdownMenuItem onSelect={handleLogout}>
+										<DropdownMenuItem className="flex justify-between gap-5" onSelect={handleLogout}>
 											{t('logout')}
+											<LogoutIcon />
 										</DropdownMenuItem>
 									</DropdownMenuGroup>
 								</DropdownMenuContent>
