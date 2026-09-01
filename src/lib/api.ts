@@ -1,7 +1,8 @@
 // This file contains utility functions for making API requests to the backend server.
 // It provides functions for GET, POST, PUT, and DELETE requests, handling JSON data and error responses appropriately.
 
-import type { FetchData, ApiGet, ApiPost, ApiPut, ApiDelete } from './types.ts';
+import type { FetchData, ApiGet, ApiPost, ApiPut, ApiDelete } from '@/lib/types.ts';
+import { ApiError } from '@/lib/api-errors.ts';
 
 // Route requests through a same-origin proxy in both development
 // and production to avoid browser CORS restrictions.
@@ -15,20 +16,9 @@ const GET_RETRY_COUNT = 2;
 const RETRY_DELAY_MS = 750;
 
 // Pause before the next attempt to avoid immediately overloading the API again.
-const wait = (delay: number) =>
-	new Promise<void>((resolve) => {
+const wait = (delay: number) => new Promise<void>((resolve) => {
 		window.setTimeout(resolve, delay);
 	});
-
-class ApiError extends Error {
-	status: number;
-
-	constructor(status: number, statusText: string) {
-		super(`Error: ${status} ${statusText}. Try again now.`);
-		this.name = 'ApiError';
-		this.status = status;
-	}
-}
 
 const fetchData : FetchData = (url, requestOptions) => {
     const apiUrl = `${API_BASE_URL}${url}`;
@@ -39,18 +29,39 @@ const fetchData : FetchData = (url, requestOptions) => {
         .then((response) => {
             if (!response.ok) {
                 // Preserve the HTTP status so callers can decide whether to retry.
-                const error = new ApiError(response.status, response.statusText);
-
-                throw error;
+                throw new ApiError(response.status, response.statusText);
             }
 
             if (requestOptions.method !== 'DELETE')
                 return response.json();
-        })
-        .catch((error) => {
+
+        }).catch((error) => {
             throw error;
         });
 };
+
+// Retry temporary GET failures with an increasing delay.
+const fetchGetWithRetry = async <T>(apiUrl: string, attempt = 0): Promise<T | undefined> => {
+	try {
+		return await fetchData<T>(apiUrl, {
+			method: 'GET',
+		});
+
+	} catch (error) {
+		const canRetry = error instanceof ApiError && RETRYABLE_STATUS_CODES.has(error.status) && attempt < GET_RETRY_COUNT;
+
+		if (!canRetry) {
+			throw error;
+		}
+
+		const nextAttempt = attempt + 1;
+		console.warn(`Retrying GET "${apiUrl}" ` +`(${nextAttempt}/${GET_RETRY_COUNT})...`);
+		await wait(RETRY_DELAY_MS * nextAttempt);
+
+		return fetchGetWithRetry<T>(apiUrl, nextAttempt);
+	}
+};
+
 
 export const apiGet: ApiGet = async (url, params) => {
 	const searchParams = new URLSearchParams();
@@ -65,35 +76,9 @@ export const apiGet: ApiGet = async (url, params) => {
 	const queryString = searchParams.toString();
 	const apiUrl = queryString ? `${url}?${queryString}` : url;
 
-	let lastError: unknown;
-
-	// The first iteration is the original request, followed by two retries.
-	for (let attempt = 0; attempt <= GET_RETRY_COUNT; attempt += 1) {
-		try {
-			return await fetchData(apiUrl, {
-				method: 'GET',
-			});
-		} catch (error) {
-			lastError = error;
-
-			// Retry only temporary gateway/server failures.
-			const shouldRetry =
-				error instanceof ApiError &&
-				RETRYABLE_STATUS_CODES.has(error.status) &&
-				attempt < GET_RETRY_COUNT;
-
-			if (!shouldRetry) {
-				throw error;
-			}
-
-			// Increase the delay before every following attempt.
-			await wait(RETRY_DELAY_MS * (attempt + 1));
-		}
-	}
-
-	// This is only a TypeScript safeguard because the loop normally throws first.
-	throw lastError;
+	return fetchGetWithRetry(apiUrl);
 };
+
 
 export const apiPost : ApiPost = (url, data) => {
     const requestOptions = {

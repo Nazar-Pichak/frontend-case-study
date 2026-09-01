@@ -84,6 +84,13 @@ const englishTranslations = {
 
     scrollToTop: 'Scroll to top',
 
+    networkError: 'Connection failed. Try again.',
+    invalidCredentials: 'Incorrect email or password.',
+    requestError: 'Check the entered data.',
+    serviceUnavailable: 'Service unavailable. Try later.',
+    gatewayTimeout: 'Server timed out. Try later.',
+    unexpectedError: 'Something went wrong. Try again.',
+
 } as const;
 
 export type TranslationKey = keyof typeof englishTranslations;
@@ -171,6 +178,13 @@ const czechTranslations: Record<TranslationKey, string> = {
     and: 'a',
 
     scrollToTop: 'Přejít nahoru',
+
+    networkError: 'Připojení selhalo. Zkuste to znovu.',
+    invalidCredentials: 'Nesprávný e-mail nebo heslo.',
+    requestError: 'Zkontrolujte zadané údaje.',
+    serviceUnavailable: 'Služba není dostupná. Zkuste to později.',
+    gatewayTimeout: 'Server neodpověděl včas. Zkuste to později.',
+    unexpectedError: 'Něco se pokazilo. Zkuste to znovu.',
 };
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {

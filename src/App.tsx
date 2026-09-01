@@ -3,6 +3,9 @@ import { useTranslation } from '@/hooks/useTranslation.ts';
 
 import { apiGet, apiPost } from '@/lib/api.ts';
 import { formatCurrency, cn } from '@/lib/utils.ts';
+import { getApiErrorKey } from '@/lib/api-errors.ts';
+
+import type { TranslationKey } from '@/lib/i18n.ts';
 import type {
 	CreateOrderResponse,
 	EventData,
@@ -67,22 +70,31 @@ function App() {
 	const [isScrolled, setIsScrolled] = useState(false);
 	// Store seats purchased by an authenticated user separately.
 	const [mySeatIds, setMySeatIds] = useState<Set<string>>(() => new Set());
+	const [eventErrorKey, setEventErrorKey] = useState<TranslationKey | null>(null);
+	const [seatingErrorKey, setSeatingErrorKey] = useState<TranslationKey | null>(null);
 
 	const avatarSrc = "/ian-dooley-d1UPkiFd04A-unsplash.jpg"
 	const eventId = eventData?.eventId;
 
 	useEffect(() => {
 		const fetchEventData = async (): Promise<void> => {
+			setEventErrorKey(null);
+
 			try {
 				const response = await apiGet<EventData>('/event');
 
-				if (response) {
-					setEventData(response);
+				if (!response) {
+					setEventErrorKey('unexpectedError');
+					return;
 				}
+
+				setEventData(response);
 			} catch (error: unknown) {
-				if (error instanceof Error) {
-					console.error(error.message);
-				}
+				// Keep technical details available for development.
+				console.error('Failed to load event:', error);
+
+				// Store a translation key instead of a fixed-language message.
+				setEventErrorKey(getApiErrorKey(error));
 			}
 		};
 
@@ -95,18 +107,24 @@ function App() {
 		}
 
 		const fetchSeatingData = async (): Promise<void> => {
+			setSeatingErrorKey(null);
+
 			try {
 				const response = await apiGet<SeatingData>(
 					`/event-tickets?eventId=${eventId}`
 				);
 
-				if (response) {
-					setSeatingData(response);
+				if (!response) {
+					setSeatingErrorKey('unexpectedError');
+					return;
 				}
+
+				setSeatingData(response);
 			} catch (error: unknown) {
-				if (error instanceof Error) {
-					console.error(error.message);
-				}
+				// Keep technical details available for development.
+				console.error('Failed to load seating data:', error);
+
+				setSeatingErrorKey(getApiErrorKey(error));
 			}
 		};
 
@@ -179,13 +197,6 @@ function App() {
 		return total + (ticketType?.price ?? 0);
 	}, 0);
 
-	const getErrorMessage = (error: unknown) => {
-		if (error instanceof Error) {
-			return error.message;
-		}
-
-		return 'An unexpected error occurred.';
-	};
 
 	const createOrder = async (user: UserDetails, isAuthenticatedPurchase = false) => {
 		if (!eventData) {
@@ -204,6 +215,7 @@ function App() {
 			})),
 			user,
 		});
+
 
 		if (!order) {
 			throw new Error('The order could not be created.');
@@ -268,7 +280,8 @@ function App() {
 			// The user authenticated before creating this order.
 			await createOrder(user, true);
 		} catch (error) {
-			setCheckoutError(getErrorMessage(error));
+			// Convert the technical API error into a translated user message.
+			setCheckoutError(t(getApiErrorKey(error, 'login')));
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -282,7 +295,8 @@ function App() {
 			await login(credentials);
 			setIsLoginOpen(false);
 		} catch (error) {
-			setLoginError(getErrorMessage(error));
+			// Convert the technical API error into a translated user message.
+			setLoginError(t(getApiErrorKey(error, 'login')));
 		} finally {
 			setIsLoginSubmitting(false);
 		}
@@ -302,7 +316,8 @@ function App() {
 			// Forward the authentication state to the order handler.
 			await createOrder(user, isAuthenticatedPurchase);
 		} catch (error) {
-			setCheckoutError(getErrorMessage(error));
+			// Display a short translated message for order request failures.
+			setCheckoutError(t(getApiErrorKey(error)));
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -429,7 +444,13 @@ function App() {
 						className="self-stretch rounded-md bg-white p-3 shadow-lg lg:grow"
 						style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))', gridAutoRows: '40px' }}
 					>
-						{seatingData && eventData ? (
+						{seatingErrorKey ? (
+							<div className="flex min-h-48 items-center justify-center p-4" role="alert">
+								<p className="max-w-sm text-center text-sm text-destructive">
+									{t(seatingErrorKey)}
+								</p>
+							</div>
+						) : seatingData && eventData ? (
 							<SeatingMap
 								seatRows={seatingData.seatRows}
 								ticketTypes={seatingData.ticketTypes}
@@ -446,9 +467,15 @@ function App() {
 					</div>
 
 					<aside className="flex w-full lg:max-w-96 flex-col gap-2 rounded-md bg-white p-3 shadow-lg">
-						{eventData ? (
+						{eventErrorKey ? (
+							<div className="flex min-h-48 items-center justify-center p-4" role="alert">
+								<p className="max-w-sm text-center text-sm text-destructive">
+									{t(eventErrorKey)}
+								</p>
+							</div>
+						) : eventData ? (
 							<>
-								<img src={eventData.headerImageUrl} className="rounded-md"/>
+								<img src={eventData.headerImageUrl} className="rounded-md" alt={eventData.namePub}/>
 								<h1 className="text-xl font-semibold text-zinc-900">
 									{eventData.namePub}
 								</h1>
