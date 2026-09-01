@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation.ts';
 
 import { apiGet, apiPost } from '@/lib/api.ts';
-import { formatCurrency } from '@/lib/utils.ts';
 import { getApiErrorKey } from '@/lib/api-errors.ts';
 
 import type { TranslationKey } from '@/lib/i18n.ts';
@@ -29,6 +28,8 @@ import { SeatingLegend } from '@/components/SeatingLegend.tsx';
 import { EventDetails } from '@/components/event/EventDetails.tsx';
 import { Header } from '@/layout/Header.tsx';
 import { Footer } from '@/layout/Footer.tsx';
+import { AuthNotification } from '@/components/notifications/AuthNotification.tsx';
+import { OrderNotification } from '@/components/notifications/OrderNotification.tsx';
 
 import { Spinner } from '@/components/ui/spinner.tsx';
 import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button.tsx';
@@ -39,7 +40,7 @@ import './App.css';
 type AuthNotification = 'login' | 'logout' | null;
 
 function App() {
-	const { language, t } = useTranslation();
+	const { t } = useTranslation();
 	const [eventData, setEventData] = useState<EventData | null>(null);
 	const [seatingData, setSeatingData] = useState<SeatingData | null>(null);
 	const [selectedSeats, setSelectedSeats] = useState<Seats[]>([]);
@@ -334,7 +335,7 @@ function App() {
 				loggedInUser={loggedInUser}
 				avatarSrc={avatarSrc}
 				onOpenCart={() => setIsCartOpen(true)}
-				onOpenLogin={() => {setLoginError(null), setIsLoginOpen(true)}}
+				onOpenLogin={() => { setLoginError(null), setIsLoginOpen(true) }}
 				onOpenProfile={() => setIsProfileOpen(true)}
 				onLogout={handleLogout}
 			/>
@@ -386,29 +387,10 @@ function App() {
 
 			<div className="w-full h-96 absolute -z-10 eventron-background"></div>
 
+			{/* Notifications */}
 			<div className="fixed right-4 top-4 z-50 flex w-[calc(100%-2rem)] max-w-sm flex-col gap-3">
-
-				{authNotification && (
-					<div className="rounded-md border border-green-200 bg-green-50 p-4 text-green-800 shadow-lg" role="status" aria-live="polite">
-						<p className="text-sm">{authNotification === 'login' ? t('loginSuccessful') : t('logoutSuccessful')}</p>
-					</div>
-				)}
-
-				{completedOrder && (
-					<div
-						className="rounded-md border border-green-200 bg-green-50 p-4 text-green-800 shadow-lg"
-						role="status"
-						aria-live="polite"
-					>
-						<p className="font-semibold">{t('orderCreated')}</p>
-						<p className="mt-1 text-sm">{t('orderId')}: {completedOrder.orderId}</p>
-						<p className="text-sm">{completedOrder.message}</p>
-						<p className="mt-2 text-sm font-semibold">
-							{t('total')}:{' '}
-							{eventData ? formatCurrency(completedOrder.totalAmount, eventData.currencyIso, language) : completedOrder.totalAmount}
-						</p>
-					</div>
-				)}
+				<AuthNotification notification={authNotification}/>
+				<OrderNotification order={completedOrder} currencyIso={eventData?.currencyIso}/>
 			</div>
 
 			<CartDialog
