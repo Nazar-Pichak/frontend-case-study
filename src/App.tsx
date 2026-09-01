@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation.ts';
 
 import { apiGet, apiPost } from '@/lib/api.ts';
-import { formatCurrency, cn } from '@/lib/utils.ts';
+import { formatCurrency } from '@/lib/utils.ts';
 import { getApiErrorKey } from '@/lib/api-errors.ts';
 
 import type { TranslationKey } from '@/lib/i18n.ts';
@@ -25,29 +25,15 @@ import { ProfileDialog } from '@/components/ProfileDialog.tsx';
 import { SeatingStage } from '@/components/SeatingStage.tsx';
 import { SeatingLegend } from '@/components/SeatingLegend.tsx';
 
-import { Button } from '@/components/ui/button.tsx';
-import { CartButton } from '@/components/ui/cart-button.tsx';
-import { TranslateButton } from '@/components/ui/translate-button.tsx';
+// refactor
+import { EventDetails } from '@/components/event/EventDetails.tsx';
+import { Header } from '@/layout/Header.tsx';
+
+
 import { Spinner } from '@/components/ui/spinner.tsx';
 import { Logo } from '@/components/ui/logo.tsx';
-import { ProfileIcon } from '@/components/ui/profile-icon.tsx';
-import { LogoutIcon } from '@/components/ui/logout-icon.tsx';
 import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button.tsx';
 import { ErrorMessage } from '@/components/ui/error-message.tsx';
-import {
-	Avatar,
-	AvatarFallback,
-	AvatarImage,
-} from '@/components/ui/avatar.tsx';
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuGroup,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu.tsx';
 
 import './App.css';
 
@@ -340,102 +326,19 @@ function App() {
 		setIsCheckoutOpen(true);
 	};
 
-	const eventDateFormatter = new Intl.DateTimeFormat(
-		language === 'cs' ? 'cs-CZ' : 'en-US',
-		{
-			dateStyle: 'medium',
-			timeStyle: 'short',
-		}
-	);
 
 	return (
 		<div className="flex grow flex-col gap-4">
-			<header
-				className={cn(
-					'sticky top-0 z-40 w-full border-b border-transparent transition-all duration-300',
-					isScrolled
-						? 'border-zinc-200 bg-[#f7f5ff]/50 shadow-sm backdrop-blur-md'
-						: 'eventron-background'
-				)}
-			>
-				<nav className="mx-auto flex w-full max-w-screen-lg items-center justify-between gap-3 p-4" aria-label="Main navigation">
-					<div className="flex w-full max-w-[250px]">
-						<a href="/" className="inline-flex shrink-0 items-center" aria-label="EVENtron home">
-							<Logo className="h-6 w-auto" />
-						</a>
-					</div>
-
-					<div className="flex w-full max-w-[250px] items-center justify-end gap-3">
-						<TranslateButton />
-
-						<CartButton
-							itemCount={selectedSeats.length}
-							onClick={() => setIsCartOpen(true)}
-						/>
-
-						{loggedInUser ? (
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<Button
-										type="button"
-										variant="link"
-										size="icon"
-										className="rounded-full"
-										aria-label="Open user menu"
-									>
-										<Avatar>
-											{/* default image for user profile*/}
-											<AvatarImage
-												src={avatarSrc}
-												alt={`${loggedInUser.firstName} ${loggedInUser.lastName}`}
-												className="object-cover"
-											/>
-											<AvatarFallback>
-												{loggedInUser.firstName.charAt(0)}
-												{loggedInUser.lastName.charAt(0)}
-											</AvatarFallback>
-										</Avatar>
-									</Button>
-								</DropdownMenuTrigger>
-
-								<DropdownMenuContent className="w-[200px]" align="end">
-									<DropdownMenuLabel>
-										<span className="block">
-											{loggedInUser.firstName}{' '}
-											{loggedInUser.lastName}
-										</span>
-									</DropdownMenuLabel>
-
-									<DropdownMenuSeparator />
-
-									<DropdownMenuGroup>
-										<DropdownMenuItem className="flex justify-between gap-5" onSelect={() => setIsProfileOpen(true)}>
-											{t('userProfile')}
-											<ProfileIcon />
-										</DropdownMenuItem>
-
-										<DropdownMenuItem className="flex justify-between gap-5" onSelect={handleLogout}>
-											{t('logout')}
-											<LogoutIcon />
-										</DropdownMenuItem>
-									</DropdownMenuGroup>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						) : (
-							<Button
-								type="button"
-								variant="default"
-								onClick={() => {
-									setLoginError(null);
-									setIsLoginOpen(true);
-								}}
-							>
-								{t('login')}
-							</Button>
-						)}
-					</div>
-				</nav>
-			</header>
+			<Header
+				isScrolled={isScrolled}
+				selectedSeatCount={selectedSeats.length}
+				loggedInUser={loggedInUser}
+				avatarSrc={avatarSrc}
+				onOpenCart={() => setIsCartOpen(true)}
+				onOpenLogin={() => {setLoginError(null), setIsLoginOpen(true)}}
+				onOpenProfile={() => setIsProfileOpen(true)}
+				onLogout={handleLogout}
+			/>
 
 			<main className="flex grow flex-col justify-center">
 				<div className="m-auto flex w-full max-w-screen-lg grow flex-col-reverse items-center gap-6 lg:gap-3 p-4 lg:flex-row lg:items-start">
@@ -447,7 +350,7 @@ function App() {
 						{/* Only the seating rows change between loading, error and success */}
 						<div className="flex w-full min-w-0 grow justify-center">
 							{seatingErrorKey || eventErrorKey ? (
-								<ErrorMessage message={t(seatingErrorKey ?? eventErrorKey!)}/>
+								<ErrorMessage message={t(seatingErrorKey ?? eventErrorKey!)} />
 							) : seatingData && eventData ? (
 								<SeatingMap
 									seatRows={seatingData.seatRows}
@@ -471,42 +374,7 @@ function App() {
 						{eventErrorKey ? (
 							<ErrorMessage message={t(eventErrorKey)} />
 						) : eventData ? (
-							<div className="flex flex-col items-start gap-2 h-full">
-								<img src={eventData.headerImageUrl} className="rounded-md" alt={eventData.namePub} />
-								<h1 className="text-xl font-semibold text-zinc-900">
-									{eventData.namePub}
-								</h1>
-
-								<p className="text-sm text-zinc-500">
-									{eventData.description}
-								</p>
-
-								<small className="text-xs text-zinc-900">
-									<em>
-										<strong>{t('eventStarts')}:</strong>{' '}
-										<time dateTime={eventData.dateFrom}>
-											{eventDateFormatter.format(new Date(eventData.dateFrom))}
-										</time>
-									</em>
-								</small>
-
-								<small className="text-xs text-zinc-900">
-									<em>
-										<strong>{t('eventEnds')}:</strong>{' '}
-										<time dateTime={eventData.dateTo}>
-											{eventDateFormatter.format(new Date(eventData.dateTo))}
-										</time>
-									</em>
-								</small>
-
-								<small className="text-xs text-zinc-900">
-									<em>
-										<strong>{t('venue')}:</strong>{' '}
-										{eventData.place}
-									</em>
-								</small>
-
-							</div>
+							<EventDetails eventData={eventData} />
 						) : (
 							<Spinner label={t('loadingEventData')} />
 						)}
