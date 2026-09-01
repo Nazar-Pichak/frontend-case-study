@@ -1,4 +1,4 @@
-import { CartSummary } from '@/components/CartSummary.tsx';
+import { CartSummary } from '@/components/cart/CartSummary.tsx';
 import { Button } from '@/components/ui/button.tsx';
 import { formatCurrency } from '@/lib/utils.ts';
 import type {
