@@ -2,16 +2,14 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation.ts';
 import { useCart } from '@/hooks/useCart.ts';
 import { useScrollState } from '@/hooks/useScrollState.ts';
+import { useEventData } from '@/hooks/useEventData.ts';
 
-import { apiGet, apiPost } from '@/lib/api.ts';
+import { apiPost } from '@/lib/api.ts';
 import { getApiErrorKey } from '@/lib/api-errors.ts';
-import type { TranslationKey } from '@/lib/i18n.ts';
 import type {
 	CreateOrderResponse,
-	EventData,
 	LoginRequest,
 	LoginResponse,
-	SeatingData,
 	UserDetails,
 } from '@/lib/types.ts';
 
@@ -36,9 +34,8 @@ type AuthNotification = 'login' | 'logout' | null;
 
 function App() {
 	const { t } = useTranslation();
-	const [eventData, setEventData] = useState<EventData | null>(null);
-	const [seatingData, setSeatingData] = useState<SeatingData | null>(null);
-	const { selectedSeats, totalPrice, toggleSeat: handleToggleSeat, clearCart} = useCart(seatingData?.ticketTypes ?? []);
+	const { eventData, seatingData, eventErrorKey, seatingErrorKey} = useEventData();
+	const { selectedSeats, totalPrice, toggleSeat: handleToggleSeat, clearCart } = useCart(seatingData?.ticketTypes ?? []);
 	const [loggedInUser, setLoggedInUser] = useState<UserDetails | null>(null);
 	const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,67 +49,9 @@ function App() {
 	const [authNotification, setAuthNotification] = useState<AuthNotification>(null);
 	const [unavailableSeatIds, setUnavailableSeatIds] = useState<Set<string>>(() => new Set());
 	const [mySeatIds, setMySeatIds] = useState<Set<string>>(() => new Set());
-	const [eventErrorKey, setEventErrorKey] = useState<TranslationKey | null>(null);
-	const [seatingErrorKey, setSeatingErrorKey] = useState<TranslationKey | null>(null);
 	const isScrolled = useScrollState();
 
-	const avatarSrc = "/ian-dooley-d1UPkiFd04A-unsplash.jpg"
-	const eventId = eventData?.eventId;
-
-	useEffect(() => {
-		const fetchEventData = async (): Promise<void> => {
-			setEventErrorKey(null);
-
-			try {
-				const response = await apiGet<EventData>('/event');
-
-				if (!response) {
-					setEventErrorKey('unexpectedError');
-					return;
-				}
-
-				setEventData(response);
-			} catch (error: unknown) {
-				// Keep technical details available for development.
-				console.error('Failed to load event:', error);
-
-				// Store a translation key instead of a fixed-language message.
-				setEventErrorKey(getApiErrorKey(error));
-			}
-		};
-
-		void fetchEventData();
-	}, []);
-
-	useEffect(() => {
-		if (!eventId) {
-			return;
-		}
-
-		const fetchSeatingData = async (): Promise<void> => {
-			setSeatingErrorKey(null);
-
-			try {
-				const response = await apiGet<SeatingData>(
-					`/event-tickets?eventId=${eventId}`
-				);
-
-				if (!response) {
-					setSeatingErrorKey('unexpectedError');
-					return;
-				}
-
-				setSeatingData(response);
-			} catch (error: unknown) {
-				// Keep technical details available for development.
-				console.error('Failed to load seating data:', error);
-
-				setSeatingErrorKey(getApiErrorKey(error));
-			}
-		};
-
-		void fetchSeatingData();
-	}, [eventId]);
+	const avatarSrc = "/ian-dooley-d1UPkiFd04A-unsplash.jpg";
 
 	useEffect(() => {
 		if (!completedOrder) {
@@ -290,7 +229,7 @@ function App() {
 				loggedInUser={loggedInUser}
 				avatarSrc={avatarSrc}
 				onOpenCart={() => setIsCartOpen(true)}
-				onOpenLogin={() => { setLoginError(null), setIsLoginOpen(true) }}
+				onOpenLogin={() => {setLoginError(null), setIsLoginOpen(true)}}
 				onOpenProfile={() => setIsProfileOpen(true)}
 				onLogout={handleLogout}
 			/>
