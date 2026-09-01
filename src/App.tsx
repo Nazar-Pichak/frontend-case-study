@@ -3,15 +3,11 @@ import { useTranslation } from '@/hooks/useTranslation.ts';
 import { useCart } from '@/hooks/useCart.ts';
 import { useScrollState } from '@/hooks/useScrollState.ts';
 import { useEventData } from '@/hooks/useEventData.ts';
+import { useAuth } from '@/hooks/useAuth.ts';
 
 import { apiPost } from '@/lib/api.ts';
 import { getApiErrorKey } from '@/lib/api-errors.ts';
-import type {
-	CreateOrderResponse,
-	LoginRequest,
-	LoginResponse,
-	UserDetails,
-} from '@/lib/types.ts';
+import type { CreateOrderResponse, LoginRequest, UserDetails } from '@/lib/types.ts';
 
 import { CartDialog } from '@/components/cart/CartDialog.tsx';
 import { CheckoutDialog } from '@/components/checkout/CheckoutDialog.tsx';
@@ -34,19 +30,16 @@ type AuthNotification = 'login' | 'logout' | null;
 
 function App() {
 	const { t } = useTranslation();
-	const { eventData, seatingData, eventErrorKey, seatingErrorKey} = useEventData();
+	const { eventData, seatingData, eventErrorKey, seatingErrorKey } = useEventData();
 	const { selectedSeats, totalPrice, toggleSeat: handleToggleSeat, clearCart } = useCart(seatingData?.ticketTypes ?? []);
-	const [loggedInUser, setLoggedInUser] = useState<UserDetails | null>(null);
+	const { loggedInUser, authNotification, loginError, isLoginSubmitting, authenticate, submitLogin, logout, clearLoginError } = useAuth();
 	const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [checkoutError, setCheckoutError] = useState<string | null>(null);
 	const [completedOrder, setCompletedOrder] = useState<CreateOrderResponse | null>(null);
 	const [isLoginOpen, setIsLoginOpen] = useState(false);
-	const [isLoginSubmitting, setIsLoginSubmitting] = useState(false);
-	const [loginError, setLoginError] = useState<string | null>(null);
 	const [isCartOpen, setIsCartOpen] = useState(false);
 	const [isProfileOpen, setIsProfileOpen] = useState(false);
-	const [authNotification, setAuthNotification] = useState<AuthNotification>(null);
 	const [unavailableSeatIds, setUnavailableSeatIds] = useState<Set<string>>(() => new Set());
 	const [mySeatIds, setMySeatIds] = useState<Set<string>>(() => new Set());
 	const isScrolled = useScrollState();
@@ -66,20 +59,6 @@ function App() {
 			window.clearTimeout(timeoutId);
 		};
 	}, [completedOrder]);
-
-	useEffect(() => {
-		if (!authNotification) {
-			return;
-		}
-
-		const timeoutId = window.setTimeout(() => {
-			setAuthNotification(null);
-		}, 4000);
-
-		return () => {
-			window.clearTimeout(timeoutId);
-		};
-	}, [authNotification]);
 
 	const createOrder = async (user: UserDetails, isAuthenticatedPurchase = false) => {
 		if (!eventData) {
@@ -138,28 +117,13 @@ function App() {
 		setIsCheckoutOpen(false);
 	};
 
-	const login = async (credentials: LoginRequest) => {
-		const response = await apiPost<LoginResponse>('/login', {
-			email: credentials.email,
-			password: credentials.password,
-		});
-
-		if (!response) {
-			throw new Error('Sign in failed.');
-		}
-
-		setLoggedInUser(response.user);
-		setAuthNotification('login');
-
-		return response.user;
-	};
 
 	const handleLoginCheckout = async (credentials: LoginRequest) => {
 		setIsSubmitting(true);
 		setCheckoutError(null);
 
 		try {
-			const user = await login(credentials);
+			const user = await authenticate(credentials);
 			// The user authenticated before creating this order.
 			await createOrder(user, true);
 		} catch (error) {
@@ -171,24 +135,18 @@ function App() {
 	};
 
 	const handleStandaloneLogin = async (credentials: LoginRequest) => {
-		setIsLoginSubmitting(true);
-		setLoginError(null);
+		const user = await submitLogin(credentials);
 
-		try {
-			await login(credentials);
+		// Keep dialog visibility in App because it is presentation state,
+		// not part of the authentication session.
+		if (user) {
 			setIsLoginOpen(false);
-		} catch (error) {
-			// Convert the technical API error into a translated user message.
-			setLoginError(t(getApiErrorKey(error, 'login')));
-		} finally {
-			setIsLoginSubmitting(false);
 		}
 	};
 
 	const handleLogout = () => {
 		setIsProfileOpen(false);
-		setLoggedInUser(null);
-		setAuthNotification('logout');
+		logout();
 	};
 
 	const handleGuestCheckout = async (user: UserDetails, isAuthenticatedPurchase = false) => {
@@ -229,7 +187,10 @@ function App() {
 				loggedInUser={loggedInUser}
 				avatarSrc={avatarSrc}
 				onOpenCart={() => setIsCartOpen(true)}
-				onOpenLogin={() => {setLoginError(null), setIsLoginOpen(true)}}
+				onOpenLogin={() => {
+					clearLoginError();
+					setIsLoginOpen(true);
+				}}
 				onOpenProfile={() => setIsProfileOpen(true)}
 				onLogout={handleLogout}
 			/>
@@ -278,7 +239,10 @@ function App() {
 				open={isCheckoutOpen}
 				isSubmitting={isSubmitting}
 				errorMessage={checkoutError}
-				onClose={() => { setCheckoutError(null), setIsCheckoutOpen(false) }}
+				onClose={() => {
+					setCheckoutError(null);
+					setIsCheckoutOpen(false);
+				}}
 				onGuestSubmit={handleGuestCheckout}
 				onLoginSubmit={handleLoginCheckout}
 			/>
@@ -287,7 +251,10 @@ function App() {
 				open={isLoginOpen}
 				isSubmitting={isLoginSubmitting}
 				errorMessage={loginError}
-				onClose={() => { setLoginError(null), setIsLoginOpen(false) }}
+				onClose={() => {
+					clearLoginError();
+					setIsLoginOpen(false);
+				}}
 				onSubmit={handleStandaloneLogin}
 			/>
 
