@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation.ts';
+import { useCart } from '@/hooks/useCart.ts';
 
 import { apiGet, apiPost } from '@/lib/api.ts';
 import { getApiErrorKey } from '@/lib/api-errors.ts';
@@ -10,7 +11,6 @@ import type {
 	LoginRequest,
 	LoginResponse,
 	SeatingData,
-	Seats,
 	UserDetails,
 } from '@/lib/types.ts';
 
@@ -37,7 +37,8 @@ function App() {
 	const { t } = useTranslation();
 	const [eventData, setEventData] = useState<EventData | null>(null);
 	const [seatingData, setSeatingData] = useState<SeatingData | null>(null);
-	const [selectedSeats, setSelectedSeats] = useState<Seats[]>([]);
+	const { selectedSeats, totalPrice, toggleSeat: handleToggleSeat, clearCart} = useCart(seatingData?.ticketTypes ?? []);
+
 	const [loggedInUser, setLoggedInUser] = useState<UserDetails | null>(null);
 	const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -156,30 +157,6 @@ function App() {
 		};
 	}, []);
 
-	const handleToggleSeat = (seat: Seats) => {
-		setSelectedSeats((currentSeats) => {
-			const isSelected = currentSeats.some(
-				(currentSeat) => currentSeat.seatId === seat.seatId
-			);
-
-			if (isSelected) {
-				return currentSeats.filter(
-					(currentSeat) => currentSeat.seatId !== seat.seatId
-				);
-			}
-
-			return [...currentSeats, seat];
-		});
-	};
-
-	const totalPrice = selectedSeats.reduce((total, seat) => {
-		const ticketType = seatingData?.ticketTypes.find(
-			(type) => type.id === seat.ticketTypeId
-		);
-
-		return total + (ticketType?.price ?? 0);
-	}, 0);
-
 
 	const createOrder = async (user: UserDetails, isAuthenticatedPurchase = false) => {
 		if (!eventData) {
@@ -233,7 +210,7 @@ function App() {
 			});
 		}
 
-		setSelectedSeats([]);
+		clearCart();
 		setIsCartOpen(false);
 		setIsCheckoutOpen(false);
 	};
