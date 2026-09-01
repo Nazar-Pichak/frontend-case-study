@@ -15,7 +15,7 @@ import type {
 } from '@/lib/types.ts';
 
 import { CartDialog } from '@/components/cart/CartDialog.tsx';
-import { CheckoutDialog } from '@/components/CheckoutDialog';
+import { CheckoutDialog } from '@/components/checkout/CheckoutDialog.tsx';
 import { LoginDialog } from '@/components/auth/LoginDialog.tsx';
 import { ProfileDialog } from '@/components/auth/ProfileDialog.tsx';
 
