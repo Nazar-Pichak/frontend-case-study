@@ -18,12 +18,26 @@ interface UseAuthResult {
 	clearLoginError: () => void;
 }
 
+const USER_STORAGE_KEY = 'eventron-user';
+
+const loadStoredUser = (): UserDetails | null => {
+	try {
+		// Temporary store user to the local storage to avoid authomatic logout when page is updating
+		const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+		return storedUser ? (JSON.parse(storedUser) as UserDetails): null;
+	} catch {
+		// Remove invalid data so it does not break future application starts.
+		localStorage.removeItem(USER_STORAGE_KEY);
+		return null;
+	}
+};
+
 export function useAuth(): UseAuthResult {
 	const { t } = useTranslation();
 
 	// Keep the authenticated user in one shared place so every
 	// authentication flow updates the same application state.
-	const [loggedInUser, setLoggedInUser] = useState<UserDetails | null>(null);
+	const [loggedInUser, setLoggedInUser] = useState<UserDetails | null>(loadStoredUser);
 
 	// The notification type determines whether the UI displays
 	// the successful login or logout message.
@@ -52,6 +66,8 @@ export function useAuth(): UseAuthResult {
 		}
 
 		setLoggedInUser(response.user);
+		// Store user datails
+		localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(response.user));
 		setAuthNotification('login');
 
 		return response.user;
@@ -68,11 +84,9 @@ export function useAuth(): UseAuthResult {
 		} catch (error: unknown) {
 			// Convert the technical API error into a short message
 			// translated according to the current application language.
-			setLoginError(
-				t(getApiErrorKey(error, 'login'))
-			);
-
+			setLoginError(t(getApiErrorKey(error, 'login')));
 			return null;
+
 		} finally {
 			// Always restore the form state, including failed requests.
 			setIsLoginSubmitting(false);
@@ -83,6 +97,8 @@ export function useAuth(): UseAuthResult {
 		// Authentication owns the user session state, while App remains
 		// responsible for closing presentation-only dialogs.
 		setLoggedInUser(null);
+		// Remove user datails
+		localStorage.removeItem(USER_STORAGE_KEY);
 		setAuthNotification('logout');
 	};
 
