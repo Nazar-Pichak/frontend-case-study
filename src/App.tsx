@@ -4,6 +4,7 @@ import { useScrollState } from '@/hooks/useScrollState.ts';
 import { useEventData } from '@/hooks/useEventData.ts';
 import { useAuth } from '@/hooks/useAuth.ts';
 import { useCheckout } from '@/hooks/useCheckout.ts';
+import { useOrderHistory } from '@/hooks/useOrderHistory.ts';
 
 import { Header } from '@/components/layout/Header.tsx';
 import { Footer } from '@/components/layout/Footer.tsx';
@@ -11,6 +12,7 @@ import { CartDialog } from '@/components/cart/CartDialog.tsx';
 import { CheckoutDialog } from '@/components/checkout/CheckoutDialog.tsx';
 import { LoginDialog } from '@/components/auth/LoginDialog.tsx';
 import { ProfileDialog } from '@/components/auth/ProfileDialog.tsx';
+import { OrderHistoryDialog } from '@/components/orders/OrderHistoryDialog.tsx';
 import { AuthNotification } from '@/components/notifications/AuthNotification.tsx';
 import { OrderNotification } from '@/components/notifications/OrderNotification.tsx';
 import { EventSection } from '@/components/event/EventSection.tsx';
@@ -21,13 +23,14 @@ import type { LoginRequest, UserDetails } from '@/lib/types.ts';
 
 import './App.css';
 
-const DEFAULT_AVATAR_SRC ='/ian-dooley-d1UPkiFd04A-unsplash.jpg';
+const DEFAULT_AVATAR_SRC = '/ian-dooley-d1UPkiFd04A-unsplash.jpg';
 
 function App() {
 
 	const { eventData, seatingData, eventErrorKey, seatingErrorKey } = useEventData();
 	const { selectedSeats, totalPrice, toggleSeat: handleToggleSeat, clearCart } = useCart(seatingData?.ticketTypes ?? []);
 	const { loggedInUser, authNotification, loginError, isLoginSubmitting, authenticate, submitLogin, logout, clearLoginError } = useAuth();
+	const { orders: orderHistory, addOrder: addOrderToHistory, clearOrderHistory, } = useOrderHistory(loggedInUser?.email ?? null);
 	const {
 		completedOrder,
 		checkoutError,
@@ -38,12 +41,13 @@ function App() {
 		submitLoginCheckout,
 		resetCheckoutFeedback,
 		clearCheckoutError,
-	} = useCheckout({ eventData, selectedSeats, clearCart, authenticate });
+	} = useCheckout({ eventData, selectedSeats, clearCart, authenticate, saveAuthenticatedOrder: addOrderToHistory });
 
 	const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 	const [isLoginOpen, setIsLoginOpen] = useState(false);
 	const [isCartOpen, setIsCartOpen] = useState(false);
 	const [isProfileOpen, setIsProfileOpen] = useState(false);
+	const [isOrderHistoryOpen, setIsOrderHistoryOpen] = useState(false);
 	const isScrolled = useScrollState();
 
 	const handleStandaloneLogin = async (credentials: LoginRequest) => {
@@ -58,6 +62,7 @@ function App() {
 
 	const handleLogout = () => {
 		setIsProfileOpen(false);
+		setIsOrderHistoryOpen(false);
 		logout();
 	};
 
@@ -109,6 +114,7 @@ function App() {
 				}}
 				onOpenProfile={() => setIsProfileOpen(true)}
 				onLogout={handleLogout}
+				onOpenOrderHistory={() => setIsOrderHistoryOpen(true)}
 			/>
 
 			<main className="flex grow flex-col justify-center">
@@ -179,6 +185,14 @@ function App() {
 				user={loggedInUser}
 				avatarSrc={DEFAULT_AVATAR_SRC}
 				onClose={() => setIsProfileOpen(false)}
+			/>
+
+			<OrderHistoryDialog
+				open={isOrderHistoryOpen}
+				orders={orderHistory}
+				currencyIso={eventData?.currencyIso ?? 'CZK'}
+				onClose={() => setIsOrderHistoryOpen(false)}
+				onClear={clearOrderHistory}
 			/>
 
 			<ScrollToTopButton />

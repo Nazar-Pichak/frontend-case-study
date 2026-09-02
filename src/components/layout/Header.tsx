@@ -1,9 +1,10 @@
 import { Logo } from '@/components/ui/logo.tsx';
 import { Button } from '@/components/ui/button.tsx';
-import { LogoutIcon } from '@/components/ui/logout-icon.tsx';
 import { CartButton } from '@/components/ui/cart-button.tsx';
+import { LogoutIcon } from '@/components/ui/logout-icon.tsx';
 import { ProfileIcon } from '@/components/ui/profile-icon.tsx';
 import { TranslateButton } from '@/components/ui/translate-button.tsx';
+import { OrderHistoryIcon } from '@/components/ui/order-history-icon.tsx';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.tsx';
 import {
     DropdownMenu,
@@ -29,6 +30,7 @@ interface HeaderProps {
     onOpenLogin: () => void;
     onOpenProfile: () => void;
     onLogout: () => void;
+    onOpenOrderHistory: () => void;
 }
 
 export function Header({
@@ -40,16 +42,17 @@ export function Header({
     onOpenLogin,
     onOpenProfile,
     onLogout,
+    onOpenOrderHistory,
 }: HeaderProps) {
 
     const { t } = useTranslation();
 
     return (
         <header className={cn(
-                'sticky top-0 z-40 w-full border-b border-transparent transition-all duration-300',
-                // Add transparency and blur only after the page starts scrolling.
-                isScrolled ? 'border-zinc-200 bg-[#f7f5ff]/50 shadow-sm backdrop-blur-md' : 'eventron-background'
-            )}
+            'sticky top-0 z-40 w-full border-b border-transparent transition-all duration-300',
+            // Add transparency and blur only after the page starts scrolling.
+            isScrolled ? 'border-zinc-200 bg-[#f7f5ff]/50 shadow-sm backdrop-blur-md' : 'eventron-background'
+        )}
         >
             <nav className="mx-auto flex w-full max-w-screen-lg items-center justify-between gap-3 p-4" aria-label="Main navigation">
                 <div className="flex w-full max-w-[250px]">
@@ -61,7 +64,7 @@ export function Header({
                 <div className="flex w-full max-w-[250px] items-center justify-end gap-3">
                     <TranslateButton />
 
-                    <CartButton itemCount={selectedSeatCount} onClick={onOpenCart}/>
+                    <CartButton itemCount={selectedSeatCount} onClick={onOpenCart} />
 
                     {loggedInUser ? (
                         <DropdownMenu>
@@ -102,6 +105,11 @@ export function Header({
                                     <DropdownMenuItem className="flex justify-between gap-5" onSelect={onOpenProfile}>
                                         {t('userProfile')}
                                         <ProfileIcon />
+                                    </DropdownMenuItem>
+
+                                    <DropdownMenuItem className="flex justify-between gap-5" onSelect={onOpenOrderHistory}>
+                                        {t('orderHistory')}
+                                        <OrderHistoryIcon />
                                     </DropdownMenuItem>
 
                                     <DropdownMenuItem className="flex justify-between gap-5" onSelect={onLogout}>

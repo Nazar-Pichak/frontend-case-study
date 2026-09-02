@@ -19,6 +19,7 @@ flowchart TD
 
     DATA --> EVENTHOOK["useEventData"]
     DATA --> CARTHOOK["useCart"]
+    DATA --> HISTORYHOOK["useOrderHistory"]
 
     ACTIONS --> AUTHHOOK["useAuth"]
     ACTIONS --> CHECKOUTHOOK["useCheckout"]
@@ -40,8 +41,11 @@ flowchart TD
     USERMENU --> LOGINBUTTON["Login button"]
     USERMENU --> AVATAR["Avatar dropdown"]
 
+    AVATAR --> HISTORYACTION["Order history action"]
     AVATAR --> PROFILEACTION["Profile action"]
     AVATAR --> LOGOUTACTION["Logout action"]
+
+    HISTORYACTION --> HISTORYICON["OrderHistoryIcon"]
 
     CONTENT --> SEATING["SeatingSection"]
     CONTENT --> EVENT["EventSection"]
@@ -97,12 +101,16 @@ flowchart TD
     DIALOGS --> CHECKOUTDIALOG["CheckoutDialog"]
     DIALOGS --> LOGINDIALOG["LoginDialog"]
     DIALOGS --> PROFILEDIALOG["ProfileDialog"]
+    DIALOGS --> HISTORYDIALOG["OrderHistoryDialog"]
 
     CARTDIALOG --> CARTSUMMARY["CartSummary"]
     CARTSUMMARY --> REMOVESEAT["Remove seat"]
 
     CHECKOUTDIALOG --> GUESTFORM["Guest form"]
     CHECKOUTDIALOG --> CHECKOUTLOGIN["Login form"]
+
+    HISTORYDIALOG --> HISTORYLIST["Stored orders"]
+    HISTORYDIALOG --> CLEARHISTORY["Delete history"]
 
     classDef entry fill:#25196a,color:#fff,stroke:#25196a;
     classDef provider fill:#ede9fe,color:#25196a,stroke:#7c3aed;
@@ -114,9 +122,11 @@ flowchart TD
     class MAIN entry;
     class STRICT,LANG provider;
     class APP,LOGIC,VIEW,DATA,ACTIONS,PAGE,OVERLAYS orchestration;
-    class EVENTHOOK,CARTHOOK,AUTHHOOK,CHECKOUTHOOK,SCROLLHOOK hook;
-    class HEADER,CONTENT,FOOTER,SEATING,EVENT,STAGE,LEGEND,MAP,ROWS,DETAILS,CALENDAR,NOTIFICATIONS,DIALOGS,AUTHNOTICE,ORDERNOTICE,CARTDIALOG,CHECKOUTDIALOG,LOGINDIALOG,PROFILEDIALOG,CARTSUMMARY component;
-    class LOGO,TRANSLATE,CARTBUTTON,USERMENU,LOGINBUTTON,AVATAR,PROFILEACTION,LOGOUTACTION,SCROLLBUTTON,SEATCONTENT,SEATLOADING,SEATERROR,POSITIONS,AVAILABLE,UNAVAILABLE,MYSEAT,POPOVER,TICKETINFO,TOGGLE,EVENTCONTENT,EVENTLOADING,EVENTERROR,IMAGE,DESCRIPTION,DATETIME,CALENDARMENU,GOOGLE,OUTLOOK,OFFICE,YAHOO,ICS,FOOTERLOGO,PROJECTINFO,LINKS,REMOVESEAT,GUESTFORM,CHECKOUTLOGIN ui;
+    class EVENTHOOK,CARTHOOK,HISTORYHOOK,AUTHHOOK,CHECKOUTHOOK,SCROLLHOOK hook;
+
+    class HEADER,CONTENT,FOOTER,SEATING,EVENT,STAGE,LEGEND,MAP,ROWS,DETAILS,CALENDAR,NOTIFICATIONS,DIALOGS,AUTHNOTICE,ORDERNOTICE,CARTDIALOG,CHECKOUTDIALOG,LOGINDIALOG,PROFILEDIALOG,HISTORYDIALOG,CARTSUMMARY component;
+
+    class LOGO,TRANSLATE,CARTBUTTON,USERMENU,LOGINBUTTON,AVATAR,HISTORYACTION,HISTORYICON,PROFILEACTION,LOGOUTACTION,SCROLLBUTTON,SEATCONTENT,SEATLOADING,SEATERROR,POSITIONS,AVAILABLE,UNAVAILABLE,MYSEAT,POPOVER,TICKETINFO,TOGGLE,EVENTCONTENT,EVENTLOADING,EVENTERROR,IMAGE,DESCRIPTION,DATETIME,CALENDARMENU,GOOGLE,OUTLOOK,OFFICE,YAHOO,ICS,FOOTERLOGO,PROJECTINFO,LINKS,REMOVESEAT,GUESTFORM,CHECKOUTLOGIN,HISTORYLIST,CLEARHISTORY ui;
 ```
 
 ## State and API orchestration
@@ -127,12 +137,13 @@ flowchart TD
     APP --> CART["useCart"]
     APP --> AUTH["useAuth"]
     APP --> CHECKOUT["useCheckout"]
+    APP --> HISTORY["useOrderHistory"]
 
     EVENTDATA --> EVENTREQUEST["GET /event"]
     EVENTREQUEST --> EVENTID["eventId"]
     EVENTID --> SEATINGREQUEST["GET /event-tickets"]
-
     SEATINGREQUEST --> SEATINGDATA["Seating data"]
+
     SEATINGDATA --> CART
     SEATINGDATA --> SEATINGUI["SeatingSection"]
 
@@ -146,10 +157,15 @@ flowchart TD
 
     AUTH --> USER["loggedInUser"]
     AUTH --> AUTHENTICATE["authenticate"]
-    AUTHENTICATE --> LOGINREQUEST["POST /login"]
 
+    AUTHENTICATE --> LOGINREQUEST["POST /login"]
     USER --> CHECKOUT
     AUTHENTICATE --> CHECKOUT
+
+    AUTH --> AUTHSTORAGE["localStorage: eventron-user"]
+    AUTHSTORAGE --> AUTH
+
+    USER --> HISTORY
 
     CHECKOUT --> ORDERREQUEST["POST /order"]
     ORDERREQUEST --> SUCCESS["Successful order"]
@@ -159,6 +175,13 @@ flowchart TD
     SUCCESS --> UNAVAILABLE["unavailableSeatIds"]
     SUCCESS --> MYSEATS["mySeatIds"]
     SUCCESS --> CLEAR
+    SUCCESS -->|"authenticated purchases only"| HISTORY
+
+    HISTORY --> ORDERSTORAGE["localStorage: eventron-order-history"]
+    ORDERSTORAGE --> HISTORY
+
+    HISTORY --> HISTORYDIALOG["OrderHistoryDialog"]
+    HISTORYDIALOG -->|"delete current user history"| HISTORY
 
     COMPLETED --> ORDERNOTICE["OrderNotification"]
     UNAVAILABLE --> SEATINGUI
@@ -166,6 +189,7 @@ flowchart TD
 
     EVENTREQUEST --> APIGET["apiGet"]
     SEATINGREQUEST --> APIGET
+
     LOGINREQUEST --> APIPOST["apiPost"]
     ORDERREQUEST --> APIPOST
 
@@ -179,13 +203,19 @@ flowchart TD
     classDef root fill:#25196a,color:#fff,stroke:#25196a;
     classDef hook fill:#e0f2fe,color:#0c4a6e,stroke:#0284c7;
     classDef state fill:#f7f5ff,color:#25196a,stroke:#8b5cf6;
+    classDef storage fill:#dcfce7,color:#14532d,stroke:#22c55e;
     classDef request fill:#fef3c7,color:#78350f,stroke:#f59e0b;
     classDef external fill:#fee2e2,color:#7f1d1d,stroke:#ef4444;
 
     class APP root;
-    class EVENTDATA,CART,AUTH,CHECKOUT hook;
-    class EVENTID,SEATINGDATA,SELECTED,TOTAL,TOGGLE,CLEAR,USER,AUTHENTICATE,SUCCESS,FAILURE,COMPLETED,UNAVAILABLE,MYSEATS,ORDERNOTICE,SEATINGUI state;
+    class EVENTDATA,CART,AUTH,CHECKOUT,HISTORY hook;
+
+    class EVENTID,SEATINGDATA,SELECTED,TOTAL,TOGGLE,CLEAR,USER,AUTHENTICATE,SUCCESS,FAILURE,COMPLETED,UNAVAILABLE,MYSEATS,ORDERNOTICE,SEATINGUI,HISTORYDIALOG state;
+
+    class AUTHSTORAGE,ORDERSTORAGE storage;
+
     class EVENTREQUEST,SEATINGREQUEST,LOGINREQUEST,ORDERREQUEST,APIGET,APIPOST,RETRY,FETCH,PROXY request;
+
     class NFCTRON external;
 ```
 
@@ -199,10 +229,12 @@ flowchart TD
     LOGGED -->|No| DIALOG["Open CheckoutDialog"]
 
     DIALOG --> METHOD{"Selected method"}
+
     METHOD -->|Guest| GUEST["Submit guest details"]
     METHOD -->|Login| LOGIN["Authenticate user"]
 
     LOGIN --> LOGINSUCCESS{"Login successful?"}
+
     LOGINSUCCESS -->|No| LOGINERROR["Show login error"]
     LOGINSUCCESS -->|Yes| AUTHORDER
 
@@ -210,6 +242,7 @@ flowchart TD
     AUTHORDER --> ORDER
 
     ORDER --> RESULT{"Order successful?"}
+
     RESULT -->|No| ORDERERROR["Keep dialog open and show error"]
     RESULT -->|Yes| COMPLETE["Store completed order"]
 
@@ -219,7 +252,10 @@ flowchart TD
     OWNER -->|Yes| MARK["Mark as My seat"]
     OWNER -->|No| CLEAR["Clear cart"]
 
-    MARK --> CLEAR
+    MARK --> SAVEHISTORY["Save orderId and totalAmount"]
+    SAVEHISTORY --> LOCALHISTORY["Update local order history"]
+    LOCALHISTORY --> CLEAR
+
     CLEAR --> CLOSE["Close checkout dialogs"]
     CLOSE --> NOTICE["Show OrderNotification"]
 ```

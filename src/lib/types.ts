@@ -81,3 +81,8 @@ export interface CreateOrderResponse {
     user: UserDetails;
     totalAmount: number;
 }
+
+export interface StoredOrder {
+	orderId: string;
+	totalAmount: number;
+}

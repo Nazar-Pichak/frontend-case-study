@@ -91,6 +91,11 @@ const englishTranslations = {
     gatewayTimeout: 'Server timed out. Try later.',
     unexpectedError: 'Something went wrong. Try again.',
 
+    orderHistory: 'Order history',
+    noOrderHistory: 'No orders have been saved yet.',
+    clearOrderHistory: 'Delete history',
+    orderCount: 'Orders',
+
 } as const;
 
 export type TranslationKey = keyof typeof englishTranslations;
@@ -185,6 +190,11 @@ const czechTranslations: Record<TranslationKey, string> = {
     serviceUnavailable: 'Služba není dostupná. Zkuste to později.',
     gatewayTimeout: 'Server neodpověděl včas. Zkuste to později.',
     unexpectedError: 'Něco se pokazilo. Zkuste to znovu.',
+
+    orderHistory: 'Historie objednávek',
+    noOrderHistory: 'Zatím nebyly uloženy žádné objednávky.',
+    clearOrderHistory: 'Smazat historii',
+    orderCount: 'Objednávky',
 };
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {

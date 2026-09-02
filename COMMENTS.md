@@ -37,6 +37,7 @@ The implementation also includes:
 - responsive desktop and mobile layouts;
 - Czech and English localization;
 - a cart dialog available from the header;
+- temporary storage user and order datails in the browser `localStorage`
 - user profile presentation;
 - purchased-seat visualization;
 - a separate “My seat” state for authenticated purchases;
@@ -61,6 +62,7 @@ Feature components are grouped by responsibility:
 - `event` — event details and calendar integration;
 - `layout` — application header and footer;
 - `notifications` — authentication and order feedback;
+- `orders` — local data storage
 - `seating` — stage, rows, seats and legend;
 - `ui` — reusable visual primitives.
 
@@ -101,6 +103,116 @@ The external API does not consistently allow requests from the deployed frontend
 During local development, Vite proxies `/api` requests to the NFCtron API. In production, Vercel rewrites the same path to the external API. This keeps the frontend API configuration consistent between development and production and avoids browser CORS restrictions.
 
 The proxy does not fix upstream API timeouts. It only provides same-origin communication between the browser and the external service.
+
+## Local storage
+
+The application uses browser `localStorage` to preserve the authenticated user and their local order history after a page refresh.
+
+Authentication and order history are stored separately because they have different lifecycles.
+
+### Login persistence
+
+The authenticated user is stored under the following key:
+
+```text
+eventron-user
+```
+
+After a successful login, `useAuth` stores the user details returned by the API:
+
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "frontend@nfctron.com"
+}
+```
+
+When the application starts, `useAuth` reads the stored value and restores the `loggedInUser` state.
+
+This allows the user interface to remain signed in after:
+
+- refreshing the page;
+- reopening the application;
+- closing and reopening the browser.
+
+When the user logs out, the application:
+
+1. clears the `loggedInUser` state;
+2. removes `eventron-user` from `localStorage`;
+3. keeps the user's order history unchanged.
+
+The password is never stored.
+
+The API does not return an access token, refresh token or another mechanism for restoring a server-authenticated session. For this reason, this implementation preserves only the frontend login state and must not be considered secure authentication persistence.
+
+### Order history persistence
+
+Order history is stored under the following key:
+
+```text
+eventron-order-history
+```
+
+`useOrderHistory` groups locally stored orders by the normalized email address of the authenticated user:
+
+```json
+{
+  "frontend@nfctron.com": [
+    {
+      "orderId": "order-uuid",
+      "totalAmount": 1200
+    }
+  ]
+}
+```
+
+Email addresses are trimmed and converted to lowercase before being used as storage keys. This prevents different letter casing from creating multiple histories for the same user.
+
+Each stored order contains only:
+
+```ts
+interface StoredOrder {
+  orderId: string;
+  totalAmount: number;
+}
+```
+
+An order is added to local history only when:
+
+1. the order request succeeds;
+2. the purchase is authenticated;
+3. the API returns an order identifier and total amount.
+
+Guest orders are not stored.
+
+Logging out does not delete order history. It only hides it because no authenticated user is available. After signing in again with the same email address, the associated history becomes visible again.
+
+The **Delete history** action removes only the history associated with the currently authenticated email address. Histories associated with other email addresses remain unchanged.
+
+### Stored data lifecycle
+
+| Action | Authenticated user | Order history |
+|---|---|---|
+| Successful login | Saved | Unchanged |
+| Page refresh | Restored | Restored |
+| Successful authenticated order | Unchanged | Order added |
+| Successful guest order | Unchanged | Not added |
+| Logout | Removed | Preserved |
+| Delete history | Unchanged | Current user's history removed |
+
+### Limitations
+
+The stored data exists only in the current browser and on the current device.
+
+It is not:
+
+- synchronized with the API;
+- shared between browsers or devices;
+- verified against server data after restoration;
+- suitable for storing passwords, tokens or payment information.
+
+Users can inspect, modify or remove `localStorage` through browser developer tools. Therefore, the restored login state and local order history must not be treated as authoritative server data.
 
 ## Seating behavior
 

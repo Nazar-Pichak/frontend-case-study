@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation.ts';
 import { apiPost } from '@/lib/api.ts';
 import { getApiErrorKey } from '@/lib/api-errors.ts';
-import type { CreateOrderResponse, EventData, LoginRequest, Seats, UserDetails } from '@/lib/types.ts';
+import type { CreateOrderResponse, EventData, LoginRequest, Seats, UserDetails, StoredOrder } from '@/lib/types.ts';
 
 const ORDER_NOTIFICATION_DURATION_MS = 5000;
 
@@ -11,6 +11,7 @@ interface UseCheckoutOptions {
 	selectedSeats: Seats[];
 	clearCart: () => void;
 	authenticate: (credentials: LoginRequest) => Promise<UserDetails>;
+	saveAuthenticatedOrder: (email: string, order: StoredOrder) => void;
 }
 
 interface UseCheckoutResult {
@@ -25,7 +26,7 @@ interface UseCheckoutResult {
 	clearCheckoutError: () => void;
 }
 
-export function useCheckout({eventData, selectedSeats, clearCart, authenticate}: UseCheckoutOptions): UseCheckoutResult {
+export function useCheckout({eventData, selectedSeats, clearCart, authenticate, saveAuthenticatedOrder}: UseCheckoutOptions): UseCheckoutResult {
 	const { t } = useTranslation();
 	const [completedOrder, setCompletedOrder] = useState<CreateOrderResponse | null>(null);
 	const [checkoutError, setCheckoutError] = useState<string | null>(null);
@@ -47,8 +48,7 @@ export function useCheckout({eventData, selectedSeats, clearCart, authenticate}:
 		// Do not automatically retry this POST request.
 		// The server could create an order even if its response times out,
 		// and repeating the request could create a duplicate purchase.
-		const order =
-			await apiPost<CreateOrderResponse>('/order',
+		const order = await apiPost<CreateOrderResponse>('/order',
 				{
 					eventId: eventData.eventId,
 					tickets: selectedSeats.map((seat) => ({
@@ -95,6 +95,13 @@ export function useCheckout({eventData, selectedSeats, clearCart, authenticate}:
 
 				return updatedIds;
 			});
+
+			// Store only the information needed by the order history dialog.
+			saveAuthenticatedOrder(user.email, {
+				orderId: order.orderId,
+				totalAmount: order.totalAmount,
+			});
+
 		}
 
 		clearCart();
@@ -143,7 +150,7 @@ export function useCheckout({eventData, selectedSeats, clearCart, authenticate}:
 				await createOrder(user, true);
 				return true;
 			} catch (error: unknown) {
-                
+
 				setCheckoutError(t(getApiErrorKey(error)));
 				return false;
 			}
