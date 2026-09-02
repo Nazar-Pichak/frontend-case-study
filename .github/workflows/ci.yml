@@ -1,0 +1,59 @@
+name: Continuous Integration
+
+on:
+  # Validate every change pushed to the production branch.
+  push:
+    branches:
+      - main
+
+  # Validate pull requests before they are merged into main.
+  pull_request:
+    branches:
+      - main
+
+  # Allow the workflow to be started manually from GitHub Actions.
+  workflow_dispatch:
+
+# The workflow only needs permission to read repository content.
+permissions:
+  contents: read
+
+# Cancel an obsolete run when a newer commit is pushed
+# to the same branch or pull request.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-checks:
+    name: Lint, test and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # npm ci installs the exact dependency versions
+      # recorded in package-lock.json.
+      - name: Install dependencies
+        run: npm ci
+
+      # Stop the workflow when source code violates ESLint rules.
+      - name: Run lint
+        run: npm run lint
+
+      # Execute the complete Vitest suite in non-interactive mode.
+      - name: Run tests
+        run: npm test
+
+      # Verify TypeScript and confirm that Vite can create
+      # a production bundle.
+      - name: Build application
+        run: npm run build
