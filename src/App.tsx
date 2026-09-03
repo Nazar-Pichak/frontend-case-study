@@ -107,7 +107,10 @@ function App() {
 				selectedSeatCount={selectedSeats.length}
 				loggedInUser={loggedInUser}
 				avatarSrc={DEFAULT_AVATAR_SRC}
-				onOpenCart={() => setIsCartOpen(true)}
+				onOpenCart={() => {
+					clearCheckoutError();
+					setIsCartOpen(true);
+				}}
 				onOpenLogin={() => {
 					clearLoginError();
 					setIsLoginOpen(true);
@@ -152,7 +155,10 @@ function App() {
 				totalPrice={totalPrice}
 				isSubmitting={isSubmitting}
 				errorMessage={checkoutError}
-				onClose={() => setIsCartOpen(false)}
+				onClose={() => {
+					clearCheckoutError();
+					setIsCartOpen(false);
+				}}
 				onRemoveSeat={handleToggleSeat}
 				onCheckout={handleCheckoutStart}
 			/>
