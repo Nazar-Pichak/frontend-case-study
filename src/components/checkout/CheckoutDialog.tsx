@@ -15,8 +15,6 @@ interface CheckoutDialogProps {
     onLoginSubmit: (credentials: LoginRequest) => void;
 }
 
-const inputClassName = 'w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200';
-
 export function CheckoutDialog({
     open,
     isSubmitting,
@@ -108,7 +106,7 @@ export function CheckoutDialog({
                             </span>
 
                             <input
-                                className={inputClassName}
+                                className="eventron-input"
                                 type="text"
                                 autoComplete="given-name"
                                 required
@@ -128,7 +126,7 @@ export function CheckoutDialog({
                             </span>
 
                             <input
-                                className={inputClassName}
+                                className="eventron-input"
                                 type="text"
                                 autoComplete="family-name"
                                 required
@@ -148,7 +146,7 @@ export function CheckoutDialog({
                             </span>
 
                             <input
-                                className={inputClassName}
+                                className="eventron-input"
                                 type="email"
                                 autoComplete="email"
                                 required
@@ -182,7 +180,7 @@ export function CheckoutDialog({
                             </span>
 
                             <input
-                                className={inputClassName}
+                                className="eventron-input"
                                 type="email"
                                 autoComplete="email"
                                 required
@@ -204,7 +202,7 @@ export function CheckoutDialog({
                             </span>
 
                             <input
-                                className={inputClassName}
+                                className="eventron-input"
                                 type="password"
                                 autoComplete="current-password"
                                 required

@@ -76,7 +76,7 @@ export function LoginDialog({open, isSubmitting, errorMessage, onClose, onSubmit
                         </span>
 
                         <input
-                            className={inputClassName}
+                            className="eventron-input"
                             type="email"
                             autoComplete="email"
                             required
@@ -96,7 +96,7 @@ export function LoginDialog({open, isSubmitting, errorMessage, onClose, onSubmit
                         </span>
 
                         <input
-                            className={inputClassName}
+                            className="eventron-input"
                             type="password"
                             autoComplete="current-password"
                             required
