@@ -1,15 +1,11 @@
+import { useTranslation } from '@/hooks/useTranslation.ts';
+
 import { Button } from '@/components/ui/button.tsx';
 import { CalendarIcon } from '@/components/ui/calendar-icon.tsx';
-import { useTranslation } from '@/hooks/useTranslation.ts';
-import type { EventData } from '@/lib/types.ts';
 import { google, outlook, office365, yahoo, ics } from 'calendar-link';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu.tsx';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu.tsx';
 
+import type { EventData } from '@/lib/types.ts';
 interface AddToCalendarProps {
     event?: EventData;
     disabled?: boolean;

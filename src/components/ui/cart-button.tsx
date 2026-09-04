@@ -1,7 +1,9 @@
+import { useTranslation } from '@/hooks/useTranslation.ts';
+
 import { Button } from '@/components/ui/button.tsx';
 import { cn } from '@/lib/utils.ts';
+
 import type { ComponentProps } from 'react';
-import { useTranslation } from '@/hooks/useTranslation.ts';
 
 interface CartButtonProps
     extends Omit<ComponentProps<typeof Button>, 'children'> {

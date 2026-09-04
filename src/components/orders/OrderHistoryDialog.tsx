@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
+
+import { formatCurrency } from '@/lib/utils.ts';
 import { Button } from '@/components/ui/button.tsx';
 import { useTranslation } from '@/hooks/useTranslation.ts';
-import { formatCurrency } from '@/lib/utils.ts';
+
 import type { StoredOrder } from '@/lib/types.ts';
 
 interface OrderHistoryDialogProps {

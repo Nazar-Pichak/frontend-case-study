@@ -1,12 +1,10 @@
-import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
-} from '@/components/ui/avatar.tsx';
-import { Button } from '@/components/ui/button.tsx';
-import type { UserDetails } from '@/lib/types.ts';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from '@/hooks/useTranslation.ts';
+
+import { Button } from '@/components/ui/button.tsx';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.tsx';
+
+import type { UserDetails } from '@/lib/types.ts';
 
 interface ProfileDialogProps {
     open: boolean;

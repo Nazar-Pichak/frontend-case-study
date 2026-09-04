@@ -1,9 +1,10 @@
-import { Button } from '@/components/ui/button.tsx';
-import { formatCurrency } from '@/lib/utils.ts';
-import type { Seats, SeatRows, TicketTypes } from '@/lib/types.ts';
 import { useTranslation } from '@/hooks/useTranslation.ts';
+
+import { formatCurrency } from '@/lib/utils.ts';
+import { Button } from '@/components/ui/button.tsx';
 import { RemoveIcon } from '@/components/ui/remove-icon.tsx';
 
+import type { Seats, SeatRows, TicketTypes } from '@/lib/types.ts';
 interface CartSummaryProps {
     selectedSeats: Seats[];
     seatRows: SeatRows[];

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation.ts';
+
 import { apiPost } from '@/lib/api.ts';
 import { getApiErrorKey } from '@/lib/api-errors.ts';
+
 import type { CreateOrderResponse, EventData, LoginRequest, Seats, UserDetails, StoredOrder } from '@/lib/types.ts';
 
 const ORDER_NOTIFICATION_DURATION_MS = 5000;

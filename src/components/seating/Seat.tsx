@@ -1,13 +1,11 @@
-import { Button } from '@/components/ui/button.tsx';
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from '@/components/ui/popover.tsx';
-import type { Seats, TicketTypes } from '@/lib/types.ts';
-import { cn, formatCurrency } from '@/lib/utils.ts';
 import { useState, forwardRef } from 'react';
 import { useTranslation } from '@/hooks/useTranslation.ts';
+
+import { Button } from '@/components/ui/button.tsx';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover.tsx';
+import { cn, formatCurrency } from '@/lib/utils.ts';
+
+import type { Seats, TicketTypes } from '@/lib/types.ts';
 
 interface SeatProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 	seatData: Seats;

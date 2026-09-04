@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+
 import { apiGet } from '@/lib/api.ts';
 import { getApiErrorKey } from '@/lib/api-errors.ts';
+
 import type { TranslationKey } from '@/lib/i18n.ts';
 import type { EventData, SeatingData} from '@/lib/types.ts';
 

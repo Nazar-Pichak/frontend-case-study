@@ -1,6 +1,8 @@
+import { useCart } from '@/hooks/useCart.ts';
+
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { useCart } from '@/hooks/useCart.ts';
+
 import type { Seats, TicketTypes } from '@/lib/types.ts';
 
 const ticketTypes: TicketTypes[] = [

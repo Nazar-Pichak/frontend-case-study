@@ -1,23 +1,23 @@
 import { useState } from 'react';
 import { useCart } from '@/hooks/useCart.ts';
-import { useScrollState } from '@/hooks/useScrollState.ts';
-import { useEventData } from '@/hooks/useEventData.ts';
 import { useAuth } from '@/hooks/useAuth.ts';
 import { useCheckout } from '@/hooks/useCheckout.ts';
+import { useEventData } from '@/hooks/useEventData.ts';
+import { useScrollState } from '@/hooks/useScrollState.ts';
 import { useOrderHistory } from '@/hooks/useOrderHistory.ts';
 
-import { Header } from '@/components/layout/Header.tsx';
 import { Footer } from '@/components/layout/Footer.tsx';
+import { Header } from '@/components/layout/Header.tsx';
 import { CartDialog } from '@/components/cart/CartDialog.tsx';
-import { CheckoutDialog } from '@/components/checkout/CheckoutDialog.tsx';
 import { LoginDialog } from '@/components/auth/LoginDialog.tsx';
+import { EventSection } from '@/components/event/EventSection.tsx';
 import { ProfileDialog } from '@/components/auth/ProfileDialog.tsx';
+import { SeatingSection } from '@/components/seating/SeatingSection.tsx';
+import { CheckoutDialog } from '@/components/checkout/CheckoutDialog.tsx';
+import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button.tsx';
 import { OrderHistoryDialog } from '@/components/orders/OrderHistoryDialog.tsx';
 import { AuthNotification } from '@/components/notifications/AuthNotification.tsx';
 import { OrderNotification } from '@/components/notifications/OrderNotification.tsx';
-import { EventSection } from '@/components/event/EventSection.tsx';
-import { SeatingSection } from '@/components/seating/SeatingSection.tsx';
-import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button.tsx';
 
 import type { LoginRequest, UserDetails } from '@/lib/types.ts';
 

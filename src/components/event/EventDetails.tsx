@@ -1,4 +1,5 @@
 import { useTranslation } from '@/hooks/useTranslation.ts';
+
 import type { EventData } from '@/lib/types.ts';
 
 interface EventDetailsProps {

@@ -1,6 +1,7 @@
 import { useTranslation } from '@/hooks/useTranslation.ts';
-import type { CreateOrderResponse } from '@/lib/types.ts';
+
 import { formatCurrency } from '@/lib/utils.ts';
+import type { CreateOrderResponse } from '@/lib/types.ts';
 
 interface OrderNotificationProps {
     order: CreateOrderResponse | null;

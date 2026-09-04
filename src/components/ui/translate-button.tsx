@@ -1,3 +1,5 @@
+import { useTranslation } from '@/hooks/useTranslation.ts';
+
 import { Button } from '@/components/ui/button.tsx';
 import {
     DropdownMenu,
@@ -7,9 +9,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx';
-import type { ComponentProps } from 'react';
-import { useTranslation } from '@/hooks/useTranslation.ts';
 
+import type { ComponentProps } from 'react';
 
 interface TranslateButtonProps extends Omit<ComponentProps<typeof Button>, 'children' | 'onClick' | 'size' | 'variant'>{}
 

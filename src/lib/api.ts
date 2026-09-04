@@ -1,8 +1,8 @@
 // This file contains utility functions for making API requests to the backend server.
 // It provides functions for GET, POST, PUT, and DELETE requests, handling JSON data and error responses appropriately.
 
-import type { FetchData, ApiGet, ApiPost, ApiPut, ApiDelete } from '@/lib/types.ts';
 import { ApiError } from '@/lib/api-errors.ts';
+import type { FetchData, ApiGet, ApiPost, ApiPut, ApiDelete } from '@/lib/types.ts';
 
 // Route requests through a same-origin proxy in both development
 // and production to avoid browser CORS restrictions.

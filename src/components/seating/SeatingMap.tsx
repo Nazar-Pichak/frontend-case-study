@@ -1,6 +1,7 @@
 import { Seat } from '@/components/seating/Seat.tsx';
-import type { SeatRows, Seats, TicketTypes } from '@/lib/types.ts';
 import { useTranslation } from '@/hooks/useTranslation.ts';
+
+import type { SeatRows, Seats, TicketTypes } from '@/lib/types.ts';
 
 interface SeatingMapProps {
     seatRows: SeatRows[];

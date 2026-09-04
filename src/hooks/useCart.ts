@@ -1,4 +1,5 @@
 import { useState } from 'react';
+
 import type { Seats, TicketTypes } from '@/lib/types.ts';
 
 interface UseCartResult {

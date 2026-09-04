@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import type { AuthNotificationType } from '@/components/notifications/AuthNotification.tsx';
 import { useTranslation } from '@/hooks/useTranslation.ts';
+
 import { apiPost } from '@/lib/api.ts';
 import { getApiErrorKey } from '@/lib/api-errors.ts';
+
 import type { LoginRequest, LoginResponse, UserDetails } from '@/lib/types.ts';
+import type { AuthNotificationType } from '@/components/notifications/AuthNotification.tsx';
 
 const AUTH_NOTIFICATION_DURATION_MS = 5000;
 

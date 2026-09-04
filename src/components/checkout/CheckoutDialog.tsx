@@ -1,7 +1,9 @@
-import { Button } from '@/components/ui/button.tsx';
-import type { LoginRequest, UserDetails } from '@/lib/types.ts';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from '@/hooks/useTranslation.ts';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+
+import { Button } from '@/components/ui/button.tsx';
+
+import type { LoginRequest, UserDetails } from '@/lib/types.ts';
 
 import { TEST_CREDENTIALS } from '@/lib/test-credentials.ts';
 

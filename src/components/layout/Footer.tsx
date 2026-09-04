@@ -1,5 +1,6 @@
-import { Logo } from '@/components/ui/logo.tsx';
 import { useTranslation } from '@/hooks/useTranslation.ts';
+
+import { Logo } from '@/components/ui/logo.tsx';
 
 export function Footer() {
     const { t } = useTranslation();

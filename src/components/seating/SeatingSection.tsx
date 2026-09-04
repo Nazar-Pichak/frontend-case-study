@@ -1,14 +1,13 @@
-import { SeatingLegend } from '@/components/seating/SeatingLegend.tsx';
-import { SeatingMap } from '@/components/seating/SeatingMap.tsx';
-import { SeatingStage } from '@/components/seating/SeatingStage.tsx';
-import { ErrorMessage } from '@/components/ui/error-message.tsx';
-import { Spinner } from '@/components/ui/spinner.tsx';
 import { useTranslation } from '@/hooks/useTranslation.ts';
+
+import { Spinner } from '@/components/ui/spinner.tsx';
+import { SeatingMap } from '@/components/seating/SeatingMap.tsx';
+import { ErrorMessage } from '@/components/ui/error-message.tsx';
+import { SeatingStage } from '@/components/seating/SeatingStage.tsx';
+import { SeatingLegend } from '@/components/seating/SeatingLegend.tsx';
+
 import type { TranslationKey } from '@/lib/i18n.ts';
-import type {
-    Seats,
-    SeatingData,
-} from '@/lib/types.ts';
+import type { Seats, SeatingData } from '@/lib/types.ts';
 
 interface SeatingSectionProps {
     seatingData: SeatingData | null;

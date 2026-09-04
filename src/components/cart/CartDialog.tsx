@@ -1,13 +1,11 @@
-import { CartSummary } from '@/components/cart/CartSummary.tsx';
-import { Button } from '@/components/ui/button.tsx';
-import { formatCurrency } from '@/lib/utils.ts';
-import type {
-    Seats,
-    SeatRows,
-    TicketTypes,
-} from '@/lib/types.ts';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from '@/hooks/useTranslation.ts';
+
+import { formatCurrency } from '@/lib/utils.ts';
+import { Button } from '@/components/ui/button.tsx';
+import { CartSummary } from '@/components/cart/CartSummary.tsx';
+
+import type { Seats, SeatRows, TicketTypes } from '@/lib/types.ts';
 
 interface CartDialogProps {
     open: boolean;

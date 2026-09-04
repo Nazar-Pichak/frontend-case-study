@@ -1,6 +1,7 @@
+import { useEffect, useState, type ReactNode } from 'react';
+
 import { LanguageContext } from '@/context/language-context.ts';
 import { translations, type Language, type TranslationKey } from '@/lib/i18n.ts';
-import { useEffect, useState, type ReactNode } from 'react';
 
 interface LanguageProviderProps {
     children: ReactNode;

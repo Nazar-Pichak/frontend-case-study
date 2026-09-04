@@ -1,3 +1,6 @@
+import { useTranslation } from '@/hooks/useTranslation.ts';
+
+import { cn } from '@/lib/utils.ts';
 import { Logo } from '@/components/ui/logo.tsx';
 import { Button } from '@/components/ui/button.tsx';
 import { CartButton } from '@/components/ui/cart-button.tsx';
@@ -16,10 +19,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx';
 
-import { cn } from '@/lib/utils.ts';
 import type { UserDetails } from '@/lib/types.ts';
-
-import { useTranslation } from '@/hooks/useTranslation.ts';
 
 interface HeaderProps {
     isScrolled: boolean;
