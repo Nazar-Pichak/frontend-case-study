@@ -3,8 +3,9 @@ import type { LoginRequest, UserDetails } from '@/lib/types.ts';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from '@/hooks/useTranslation.ts';
 
-type CheckoutMode = 'choice' | 'guest' | 'login';
+import { TEST_CREDENTIALS } from '@/lib/test-credentials.ts';
 
+type CheckoutMode = 'choice' | 'guest' | 'login';
 interface CheckoutDialogProps {
     open: boolean;
     isSubmitting: boolean;
@@ -28,7 +29,7 @@ export function CheckoutDialog({
     const dialogRef = useRef<HTMLDialogElement>(null);
     const [mode, setMode] = useState<CheckoutMode>('choice');
     const [guest, setGuest] = useState<UserDetails>({ email: '', firstName: '', lastName: '' });
-    const [credentials, setCredentials] = useState<LoginRequest>({ email: 'frontend@nfctron.com', password: 'Nfctron2025' });
+    const [credentials, setCredentials] = useState<LoginRequest>({...TEST_CREDENTIALS});
 
     useEffect(() => {
         const dialog = dialogRef.current;

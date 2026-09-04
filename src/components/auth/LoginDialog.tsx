@@ -2,6 +2,8 @@ import { Button } from '@/components/ui/button.tsx';
 import type { LoginRequest } from '@/lib/types.ts';
 import { useEffect, useRef, useState, type FormEvent} from 'react';
 import { useTranslation } from '@/hooks/useTranslation.ts';
+import { TEST_CREDENTIALS } from '@/lib/test-credentials';
+
 interface LoginDialogProps {
     open: boolean;
     isSubmitting: boolean;
@@ -10,17 +12,10 @@ interface LoginDialogProps {
     onSubmit: (credentials: LoginRequest) => void;
 }
 
-const inputClassName = 'w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200';
-
 export function LoginDialog({open, isSubmitting, errorMessage, onClose, onSubmit}: LoginDialogProps) {
     const { t } = useTranslation();
     const dialogRef = useRef<HTMLDialogElement>(null);
-
-    // hardcoded credentials for login
-    const [credentials, setCredentials] = useState<LoginRequest>({
-        email: 'frontend@nfctron.com',
-        password: 'Nfctron2025',
-    });
+    const [credentials, setCredentials] = useState<LoginRequest>({...TEST_CREDENTIALS});
 
     useEffect(() => {
         const dialog = dialogRef.current;

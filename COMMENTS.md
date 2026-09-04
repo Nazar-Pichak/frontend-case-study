@@ -228,6 +228,17 @@ The seating map therefore:
 - displays authenticated purchases as “My seat”;
 - displays the same seats as unavailable after logout.
 
+## Test credentials
+
+The login forms are prefilled with the public test credentials provided in the original case-study assignment:
+
+```text
+Email: frontend@nfctron.com
+Password: Nfctron2025
+```
+
+This is an intentional decision to make application testing faster. The credentials provide access only to the public test API and are not treated as application secrets.
+
 ## Testing
 
 The project uses Vitest and React Testing Library.
