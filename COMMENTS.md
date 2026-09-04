@@ -315,6 +315,7 @@ npm run build
 ## Time scope
 
 The suggested 2–4 hour time frame was not sufficient for me to complete the assignment to the desired level of quality.
+I used ChatGPT as part of an AI-assisted development approach to support implementation, debugging, refactoring and documentation.
 
 I intentionally invested additional time in optional features and production-oriented improvements, including responsive seating visualization, localization, calendar integration, API error handling, CORS proxy configuration, accessibility, deployment, testing and codebase refactoring.
 
